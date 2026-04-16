@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     cartesia_api_key: str = ""
     elevenlabs_api_key: str = ""
     openai_api_key: str = ""  # reserved for future use
+    google_cloud_api_key: str = ""
 
     # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
     anthropic_api_key: str = ""

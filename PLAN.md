@@ -7,9 +7,10 @@
 | Deepgram | `api` | ✅ Shipped |
 | Cartesia | `mixed` | ✅ Shipped (API voices + AI-parsed TTS/STT models) |
 | ElevenLabs | `mixed` | ✅ Shipped (API TTS models + voices, AI-parsed Scribe STT) |
-| **OpenAI** | `docs` | 🟡 **Next priority** — syncer written, ready to smoke test |
+| OpenAI | `docs` | ✅ Shipped (AI-parsed TTS/STT models + voices) |
+| Google Cloud | `mixed` | ✅ Shipped (API voices + AI-parsed TTS tiers + STT models; orphan-tier injection for legacy voices) |
+| **PlayHT** | `mixed` | 🟡 **Next priority** |
 | Sarvam | `docs` | ⏸️ Blocked — `docs.sarvam.ai` TLS cert failure (confirmed 2026-04-17, site unreachable in browser too). Resume when docs return. |
-| PlayHT | `mixed` | ⬜ After OpenAI |
 
 ---
 
@@ -33,65 +34,9 @@ The `source` value is informational — it labels the dominant approach. Provena
 
 ---
 
-## Next priority: OpenAI ✅ syncer written
+## Next priority: PlayHT (`mixed`)
 
-Source changed to `docs` — `developers.openai.com` is publicly accessible and cleanly categorizes TTS/STT models. No API key needed for the sync itself. No hardcoding anywhere.
-
-### Seed URLs
-
-- Models (TTS + STT): `https://developers.openai.com/api/docs/models/all`
-- Voices: `https://developers.openai.com/api/docs/guides/text-to-speech`
-
-### Why `docs` not `mixed`
-
-The `/v1/models` API returns all model types (chat, image, embeddings, realtime, audio) with zero type metadata — filtering by ID pattern is fragile. The docs page categorizes TTS vs STT explicitly. Voices have no API endpoint. So all data comes from docs.
-
-### What's in the docs (verified 2026-04-17)
-
-**TTS models (3):** `tts-1`, `tts-1-hd`, `gpt-4o-mini-tts` (default)
-
-**STT models (4):** `whisper-1`, `gpt-4o-transcribe` (default), `gpt-4o-mini-transcribe`, `gpt-4o-transcribe-diarize`
-
-**Voices (13):** alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, shimmer, verse, marin, cedar
-- ballad, verse, marin, cedar — `gpt-4o-mini-tts` only (not supported by tts-1/tts-1-hd)
-- marin, cedar — recommended for best quality
-
-### Syncer shape (3 parallel calls)
-
-```python
-class OpenAISyncer(ProviderSyncer):
-    provider_id = "openai"
-    source = "docs"
-
-    async def sync(self) -> SyncResult:
-        (tts_models, _), (stt_models, _), (tts_voices, _) = await asyncio.gather(
-            parse_models_from_docs(seed_urls=_MODELS_DOCS, model_type="tts", guidance=_TTS_GUIDANCE),
-            parse_models_from_docs(seed_urls=_MODELS_DOCS, model_type="stt", guidance=_STT_GUIDANCE),
-            parse_voices_from_docs(seed_urls=_VOICES_DOCS, guidance=_VOICES_GUIDANCE),
-        )
-        ...
-```
-
-TTS + STT share the same seed URL → prompt caching amortizes cost.
-
-### Changes needed (all done ✅)
-
-#### `naaviq-voice-providers`
-- ✅ `naaviq/sync/openai.py` — created
-- ✅ `naaviq/config.py` — `openai_api_key: str = ""`
-- ✅ `.env.example` — `OPENAI_API_KEY=`
-
-#### `naaviq-admin`
-- ✅ `naaviq_admin/config.py` — `openai_api_key: str = ""`
-- ✅ `.env.example` — `OPENAI_API_KEY=`
-- ✅ `naaviq_admin/routers/providers.py` — `"openai": "naaviq.sync.openai.OpenAISyncer"` registered
-
-### Smoke-test command
-
-```bash
-uv sync --extra sync
-ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.openai
-```
+Details in the "Future providers" section below — plan to flesh this out when we pick it up.
 
 ---
 
@@ -199,7 +144,7 @@ ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.sarvam
 2. Claude fetches pages, follows links, reads, repeats
 3. Claude calls the terminal tool → we extract structured `SyncModel[]` or `SyncVoice[]`
 
-**Model**: `claude-sonnet-4-6` at `temperature=0` (deterministic)
+**Model**: `claude-haiku-4-5-20251001` at `temperature=0` (deterministic); override via `NAAVIQ_AI_PARSER_MODEL`
 
 **Safety guards**:
 - `MAX_ITERATIONS=15` (with a nudge message when ≤3 remain)
