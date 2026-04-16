@@ -8,9 +8,10 @@ Design principles:
   - All language codes are normalized to BCP-47 uppercase region (en-US, hi-IN)
   - Provider-specific extras go into the `meta` dict field
 
-Two source types:
-  - "api"  : provider exposes a REST API we call directly
-  - "docs" : provider has no API; fetch docs and parse with an AI model (Claude/GPT/Gemini)
+Source types:
+  - "api"   : provider exposes a REST API we call directly
+  - "docs"  : provider has no API; fetch docs and parse with an AI model
+  - "mixed" : combine both (e.g., voices from API, models from docs)
 """
 
 from __future__ import annotations
@@ -83,7 +84,7 @@ class SyncResult:
     stt_models: list[SyncModel]
     tts_models: list[SyncModel]
     tts_voices: list[SyncVoice]
-    source: Literal["api", "docs"]
+    source: Literal["api", "docs", "mixed"]
     fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     notes: str | None = None
 
@@ -109,13 +110,18 @@ class ProviderSyncer(ABC):
 
             async def sync(self) -> SyncResult:
                 data = await self._fetch_raw()
-                models = self._parse_models(data)
-                voices = self._parse_voices(data)
-                return SyncResult(models=models, voices=voices, source=self.source)
+                stt_models, tts_models = self._parse_models(data)
+                tts_voices = self._parse_voices(data)
+                return SyncResult(
+                    stt_models=stt_models,
+                    tts_models=tts_models,
+                    tts_voices=tts_voices,
+                    source=self.source,
+                )
     """
 
     provider_id: ClassVar[str]
-    source: ClassVar[Literal["api", "docs"]]
+    source: ClassVar[Literal["api", "docs", "mixed"]]
 
     @abstractmethod
     async def sync(self) -> SyncResult:

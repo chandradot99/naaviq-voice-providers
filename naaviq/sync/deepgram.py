@@ -77,7 +77,6 @@ class DeepgramSyncer(ProviderSyncer):
                 meta={
                     "architecture":     m.get("architecture"),
                     "version":          m.get("version"),
-                    "uuid":             m.get("uuid"),
                     "batch":            m.get("batch", False),
                     "formatted_output": m.get("formatted_output", False),
                 },
@@ -126,7 +125,7 @@ class DeepgramSyncer(ProviderSyncer):
                 display_name=display_name,
                 gender=_gender_from_tags(tags),
                 category="premade",
-                languages=_dedup(normalize_languages(m.get("languages", []))),
+                languages=list(dict.fromkeys(normalize_languages(m.get("languages", [])))),
                 preview_url=meta_raw.get("sample"),
                 accent=meta_raw.get("accent"),
                 age=meta_raw.get("age"),
@@ -154,11 +153,6 @@ def _display_name_from_id(model_id: str) -> str:
     "whisper-large"  → "Whisper Large"
     """
     return model_id.replace("-", " ").title()
-
-
-def _dedup(langs: list[str]) -> list[str]:
-    seen: set[str] = set()
-    return [l for l in langs if not (l in seen or seen.add(l))]  # type: ignore[func-returns-value]
 
 
 def _gender_from_tags(tags: set[str]) -> str | None:

@@ -12,6 +12,11 @@ class Settings(BaseSettings):
 
     # Provider API keys — used by sync scripts
     deepgram_api_key: str = ""
+    cartesia_api_key: str = ""
+    elevenlabs_api_key: str = ""
+
+    # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
+    anthropic_api_key: str = ""
 
 
 settings = Settings()
