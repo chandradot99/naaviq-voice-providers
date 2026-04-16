@@ -11,7 +11,7 @@ from __future__ import annotations
 import httpx
 
 from naaviq.config import settings
-from naaviq.sync.base import ProviderSyncer, SyncModel, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _API_URL = "https://api.deepgram.com/v1/models"
@@ -40,7 +40,7 @@ class DeepgramSyncer(ProviderSyncer):
     async def _fetch_raw(self) -> dict:
         if not settings.deepgram_api_key:
             raise ValueError("DEEPGRAM_API_KEY is not set in .env")
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             resp = await client.get(
                 _API_URL,
                 headers={"Authorization": f"Token {settings.deepgram_api_key}"},

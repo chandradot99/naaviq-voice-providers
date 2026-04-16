@@ -34,7 +34,7 @@ from anthropic import (
     RateLimitError,
 )
 
-from naaviq.sync.base import SyncModel, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, SyncModel, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 MODEL = os.getenv("NAAVIQ_AI_PARSER_MODEL", "claude-haiku-4-5-20251001")
@@ -70,6 +70,7 @@ SyncModel schema (each item in the `models` array):
   - streaming (bool, default true)
   - is_default (bool, default false) — at most ONE per (provider, type). Pick the latest/recommended.
   - description (str | omit)
+  - eol_date (str | omit)            — "YYYY-MM-DD" if the docs state an end-of-life date for this model
   - meta (object)                    — provider-specific extras that don't fit elsewhere
 
 Rules:
@@ -147,6 +148,7 @@ _MODELS_TOOLS = [
                             "streaming":    {"type": "boolean"},
                             "is_default":   {"type": "boolean"},
                             "description":  {"type": "string"},
+                            "eol_date":     {"type": "string"},
                             "meta":         {"type": "object"},
                         },
                         "required": ["model_id", "display_name", "type"],
@@ -336,7 +338,7 @@ async def _run_agentic_loop(
     output_tokens = 0
 
     # One httpx client for the whole run — avoids a fresh TLS handshake per fetch.
-    async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as http_client:
+    async with httpx.AsyncClient(timeout=HTTP_TIMEOUT, follow_redirects=True) as http_client:
         for iteration in range(MAX_ITERATIONS):
             try:
                 response = await client.messages.create(
@@ -503,6 +505,7 @@ def _to_sync_model(d: dict) -> SyncModel:
         streaming=d.get("streaming", True),
         is_default=d.get("is_default", False),
         description=d.get("description"),
+        eol_date=d.get("eol_date"),
         meta=d.get("meta") or {},
     )
 

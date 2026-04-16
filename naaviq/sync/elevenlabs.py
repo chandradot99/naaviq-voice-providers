@@ -20,7 +20,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import AIParserError, parse_models_from_docs
-from naaviq.sync.base import ProviderSyncer, SyncModel, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _MODELS_URL = "https://api.elevenlabs.io/v1/models"
@@ -102,7 +102,7 @@ class ElevenLabsSyncer(ProviderSyncer):
     # ── Private helpers ───────────────────────────────────────────────────────
 
     async def _fetch_models(self) -> list[dict]:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             resp = await client.get(_MODELS_URL, headers=self._auth_headers())
             resp.raise_for_status()
             return resp.json()
@@ -111,7 +111,7 @@ class ElevenLabsSyncer(ProviderSyncer):
         voices: list[dict] = []
         next_token: str | None = None
 
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             for _ in range(_MAX_VOICE_PAGES):
                 params: dict = {
                     "page_size": _VOICE_PAGE_SIZE,

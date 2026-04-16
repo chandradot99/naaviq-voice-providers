@@ -27,7 +27,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import AIParserError, parse_models_from_docs
-from naaviq.sync.base import ProviderSyncer, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _VOICES_URL = "https://api.cartesia.ai/voices"
@@ -63,11 +63,11 @@ _ACCENT_MAP = {
 }
 
 _META_GUIDANCE = (
+    "Set eol_date='YYYY-MM-DD' (top-level field, not in meta) if the docs mention an end-of-life date. "
     "For every model, populate `meta` with these keys: "
     "  parent_model_id        — the family root id (e.g., 'sonic-3', 'ink-whisper'), or null if this IS the root"
     "  is_snapshot            — true for dated snapshots, else false"
     "  snapshot_date          — 'YYYY-MM-DD' for dated snapshots, else null"
-    "  eol_date               — 'YYYY-MM-DD' if the docs mention an end-of-life date, else null"
     "  production_recommended — false for '-latest' aliases (Cartesia warns against these in prod), else true"
 )
 
@@ -142,7 +142,7 @@ class CartesiaSyncer(ProviderSyncer):
         starting_after: str | None = None
         pages = 0
 
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             for _ in range(_MAX_PAGES):
                 params: dict = {
                     "limit": _PAGE_SIZE,

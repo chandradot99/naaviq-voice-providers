@@ -33,6 +33,7 @@ class ModelOut(BaseModel):
     streaming: bool
     is_default: bool
     description: str | None
+    eol_date: str | None
     meta: dict
     deprecated_at: datetime | None
     updated_at: datetime

@@ -21,6 +21,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import ClassVar, Literal
 
+# Shared HTTP timeout for every syncer. Provider APIs typically respond well
+# under 5s; 20s gives headroom for slow docs fetches in the AI parser path too.
+HTTP_TIMEOUT = 20.0
+
 
 # ── Core data types ───────────────────────────────────────────────────────────
 
@@ -41,6 +45,7 @@ class SyncModel:
     streaming: bool = True
     is_default: bool = False
     description: str | None = None
+    eol_date: str | None = None                    # "YYYY-MM-DD" if the provider publishes one
     meta: dict = field(default_factory=dict)
 
 

@@ -38,6 +38,7 @@ class Model(Base):
     streaming: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     description: Mapped[str | None] = mapped_column(Text)
+    eol_date: Mapped[str | None] = mapped_column(String(10))  # "YYYY-MM-DD" if provider publishes it
     meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)  # provider-specific extras
     deprecated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
