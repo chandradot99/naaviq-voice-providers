@@ -59,3 +59,25 @@ def normalize_language(lang: str) -> str:
 def normalize_languages(langs: list[str]) -> list[str]:
     """Normalize a list of language codes."""
     return [normalize_language(lang) for lang in langs]
+
+
+# BCP-47 region → accent label, shared across syncers that derive accent from voice language.
+ACCENT_MAP: dict[str, str] = {
+    "GB": "british",
+    "US": "american",
+    "AU": "australian",
+    "IN": "indian",
+    "CA": "canadian",
+    "IE": "irish",
+    "ZA": "south_african",
+    "NZ": "new_zealander",
+}
+
+
+def accent_from_languages(languages: list[str]) -> str | None:
+    """Derive accent from BCP-47 region code. e.g., 'en-GB' → 'british'."""
+    for lang in languages:
+        parts = lang.split("-")
+        if len(parts) >= 2 and parts[1].upper() in ACCENT_MAP:
+            return ACCENT_MAP[parts[1].upper()]
+    return None

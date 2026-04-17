@@ -83,8 +83,10 @@ _VOICES_GUIDANCE = (
     "for a given model support ALL of that model's languages. Copy the model's full language "
     "list onto EVERY voice in BCP-47 format (hi-IN, ta-IN, bn-IN, en-IN, etc.). "
     "Do NOT return an empty languages list — every voice must have languages populated. "
+    "For compatible_models: set it to the list of model IDs the speaker works with "
+    "(e.g., ['bulbul:v3'] or ['bulbul:v2'] or ['bulbul:v3','bulbul:v2'] if both). "
+    "Do NOT leave compatible_models empty unless the voice works with ALL models. "
     "In meta, note: "
-    "  compatible_model — which model(s) the speaker works with (e.g., 'bulbul:v3' or 'bulbul:v2')"
     "  is_default_speaker — true only for the default speaker of each model"
 )
 

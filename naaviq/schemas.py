@@ -55,6 +55,7 @@ class VoiceOut(BaseModel):
     age: str | None
     use_cases: list[str]
     tags: list[str]
+    compatible_models: list[str]
     meta: dict
     deprecated_at: datetime | None
     updated_at: datetime

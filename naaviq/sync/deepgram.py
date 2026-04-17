@@ -131,10 +131,10 @@ class DeepgramSyncer(ProviderSyncer):
                 age=meta_raw.get("age"),
                 use_cases=meta_raw.get("use_cases") or [],
                 tags=meta_raw.get("tags") or [],
+                compatible_models=[arch] if (arch := m.get("architecture")) else [],
                 meta={
                     "color":        meta_raw.get("color"),
                     "image":        meta_raw.get("image"),
-                    "architecture": m.get("architecture"),
                     "version":      m.get("version"),
                     "uuid":         m.get("uuid"),
                 },

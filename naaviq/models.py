@@ -61,6 +61,7 @@ class Voice(Base):
     age: Mapped[str | None] = mapped_column(String(32))
     use_cases: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
     tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    compatible_models: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
     meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)  # provider-specific extras
     deprecated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

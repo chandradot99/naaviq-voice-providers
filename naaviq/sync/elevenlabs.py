@@ -214,9 +214,9 @@ class ElevenLabsSyncer(ProviderSyncer):
                 age=labels.get("age"),
                 use_cases=[labels["use_case"]] if labels.get("use_case") else [],
                 tags=tags,
+                compatible_models=list(v.get("high_quality_base_model_ids") or []),
                 meta={
                     "labels": labels,
-                    "high_quality_base_model_ids": v.get("high_quality_base_model_ids", []),
                 },
             ))
         return voices

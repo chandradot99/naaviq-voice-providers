@@ -72,6 +72,7 @@ class SyncVoice:
     age: str | None = None
     use_cases: list[str] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
+    compatible_models: list[str] = field(default_factory=list)  # [] = works with all models
     meta: dict = field(default_factory=dict)       # provider-specific extras not covered above
 
 

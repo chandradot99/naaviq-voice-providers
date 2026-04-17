@@ -46,8 +46,10 @@ _VOICES_GUIDANCE = (
     "Return every built-in TTS voice listed on this page. "
     "voice_id = the exact lowercase string used in the API; display_name = title-cased voice_id. "
     "OpenAI docs don't publish per-voice gender — leave gender=null. "
-    "In meta, note voices that only work with gpt-4o-mini-tts (not supported by tts-1/tts-1-hd) "
-    "and any voices the docs flag as recommended."
+    "For compatible_models: if a voice only works with a specific model (e.g., gpt-4o-mini-tts only), "
+    "set compatible_models=['gpt-4o-mini-tts']. If a voice works with all TTS models (tts-1, tts-1-hd, "
+    "gpt-4o-mini-tts), set compatible_models=[]. "
+    "In meta, note any voices the docs flag as recommended."
 )
 
 

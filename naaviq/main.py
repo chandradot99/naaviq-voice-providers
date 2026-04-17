@@ -11,7 +11,7 @@ from sqlalchemy import text
 
 from naaviq.db import engine
 from naaviq.limiter import limiter
-from naaviq.routers import providers
+from naaviq.routers import catalog, providers
 
 log = structlog.get_logger()
 
@@ -53,6 +53,7 @@ app.add_middleware(
 )
 
 app.include_router(providers.router, prefix="/v1")
+app.include_router(catalog.router, prefix="/v1")
 
 
 @app.get("/health", tags=["meta"])

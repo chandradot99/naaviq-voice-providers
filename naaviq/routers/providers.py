@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from naaviq.config import settings
@@ -83,6 +83,9 @@ async def list_voices(
     gender: str | None = Query(None, description="Filter by gender: male, female, neutral"),
     category: str | None = Query(None, description="Filter by category: premade, cloned, generated"),
     language: str | None = Query(None, description="Filter by language code e.g. en-US, hi-IN"),
+    model: str | None = Query(None, description="Filter by compatible TTS model ID e.g. aura-2, Chirp3-HD. Returns voices where compatible_models contains this value OR compatible_models is empty (works with all models)."),
+    accent: str | None = Query(None, description="Filter by accent e.g. british, american, indian"),
+    search: str | None = Query(None, description="Search voice display name (case-insensitive substring match)"),
     include_deprecated: bool = False,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
@@ -100,6 +103,15 @@ async def list_voices(
         q = q.where(Voice.category == category)
     if language:
         q = q.where(Voice.languages.contains([language]))
+    if model:
+        q = q.where(or_(
+            Voice.compatible_models.contains([model]),
+            Voice.compatible_models == [],
+        ))
+    if accent:
+        q = q.where(Voice.accent == accent)
+    if search:
+        q = q.where(Voice.display_name.ilike(f"%{search}%"))
 
     total = await db.scalar(select(func.count()).select_from(q.subquery()))
     rows = await db.execute(q.order_by(Voice.display_name).limit(limit).offset(offset))

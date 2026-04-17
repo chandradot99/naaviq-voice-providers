@@ -102,6 +102,7 @@ SyncVoice schema (each item in the `voices` array):
   - age (str | omit)                  — e.g., "young", "middle-aged", "old"
   - use_cases (list[str] | omit)      — e.g., ["narration", "IVR"]
   - tags (list[str] | omit)           — e.g., ["deep", "friendly"]
+  - compatible_models (list[str])     — TTS model IDs this voice works with. [] = works with all models.
   - meta (object | omit)              — provider-specific extras
 
 Rules:
@@ -109,8 +110,9 @@ Rules:
   2. Languages in BCP-47 with uppercase region. [] means the voice supports all provider languages.
   3. Don't invent preview_url if not explicitly in the docs.
   4. category defaults to "premade" for all built-in provider voices.
-  5. Call return_voices ONCE with all voices found. Don't call it twice.
-  6. Follow links if the seed page lacks complete voice data.
+  5. Populate compatible_models with the TTS model ID(s) this voice works with. Use [] if it works with all models.
+  6. Call return_voices ONCE with all voices found. Don't call it twice.
+  7. Follow links if the seed page lacks complete voice data.
 """
 
 
@@ -184,6 +186,7 @@ _VOICES_TOOLS = [
                             "age":          {"type": "string"},
                             "use_cases":    {"type": "array", "items": {"type": "string"}},
                             "tags":         {"type": "array", "items": {"type": "string"}},
+                            "compatible_models": {"type": "array", "items": {"type": "string"}},
                             "meta":         {"type": "object"},
                         },
                         "required": ["voice_id", "display_name"],
@@ -523,6 +526,7 @@ def _to_sync_voice(d: dict) -> SyncVoice:
         age=d.get("age"),
         use_cases=d.get("use_cases") or [],
         tags=d.get("tags") or [],
+        compatible_models=d.get("compatible_models") or [],
         meta=d.get("meta") or {},
     )
 

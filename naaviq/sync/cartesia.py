@@ -28,7 +28,7 @@ import httpx
 from naaviq.config import settings
 from naaviq.sync.ai_parser import AIParserError, parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
-from naaviq.sync.language import normalize_languages
+from naaviq.sync.language import accent_from_languages, normalize_languages
 
 _VOICES_URL = "https://api.cartesia.ai/voices"
 
@@ -48,18 +48,6 @@ _GENDER_MAP = {
     "masculine":      "male",
     "feminine":       "female",
     "gender_neutral": "neutral",
-}
-
-# BCP-47 region → accent label (used when voice language is regionalized)
-_ACCENT_MAP = {
-    "GB": "british",
-    "US": "american",
-    "AU": "australian",
-    "IN": "indian",
-    "CA": "canadian",
-    "IE": "irish",
-    "ZA": "south_african",
-    "NZ": "new_zealander",
 }
 
 _META_GUIDANCE = (
@@ -196,18 +184,10 @@ def _to_sync_voice(item: dict) -> SyncVoice:
         languages=languages,
         description=item.get("description"),
         preview_url=item.get("preview_file_url"),
-        accent=_accent_from_languages(languages),
+        accent=accent_from_languages(languages),
+        compatible_models=[],
         meta={},
     )
-
-
-def _accent_from_languages(languages: list[str]) -> str | None:
-    """Derive accent from BCP-47 region. e.g., 'en-GB' → 'british'."""
-    for lang in languages:
-        parts = lang.split("-")
-        if len(parts) >= 2 and parts[1].upper() in _ACCENT_MAP:
-            return _ACCENT_MAP[parts[1].upper()]
-    return None
 
 
 # ── Local runner ──────────────────────────────────────────────────────────────

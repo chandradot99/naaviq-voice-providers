@@ -69,7 +69,7 @@ naaviq-voice-providers/
 
 - **`providers`** — Cartesia, ElevenLabs, OpenAI, Deepgram, Sarvam, etc.
 - **`models`** — STT/TTS models per provider (languages, streaming, is_default)
-- **`voices`** — TTS voices per provider (gender, category, languages, preview_url)
+- **`voices`** — TTS voices per provider (gender, category, languages, compatible_models, preview_url)
 
 All tables use `deprecated_at` instead of hard deletes. Sync scripts never write to DB.
 
@@ -119,6 +119,10 @@ Every provider uses a different language format. All languages are normalized to
 | Sarvam | `"hi-IN"`, `"en-IN"` | already correct |
 
 `"*"` is the wildcard for "supports many languages, no enumerated list" (e.g., ElevenLabs Scribe's ~99 languages). Always call `normalize_languages(langs)` before returning from any fetch method.
+
+### Voice-model relationship (`compatible_models`)
+
+`SyncVoice.compatible_models: list[str]` maps each voice to the TTS model(s) it works with. Convention: `[]` means the voice works with **all** models for that provider (e.g., Cartesia). Non-empty means restricted (e.g., `["aura-2"]` for Deepgram, `["Chirp3-HD"]` for Google Cloud). Stored as a Postgres `ARRAY(String)` column on the `voices` table.
 
 ### The `meta` field
 

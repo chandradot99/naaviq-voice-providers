@@ -27,7 +27,7 @@ import httpx
 from naaviq.config import settings
 from naaviq.sync.ai_parser import AIParserError, parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
-from naaviq.sync.language import normalize_languages
+from naaviq.sync.language import accent_from_languages, normalize_languages
 
 _VOICES_URL = "https://texttospeech.googleapis.com/v1/voices"
 
@@ -43,18 +43,6 @@ _GENDER_MAP = {
     "FEMALE":  "female",
     "NEUTRAL": "neutral",
     # SSML_VOICE_GENDER_UNSPECIFIED and other values → None
-}
-
-# BCP-47 region → accent label (same map Cartesia uses; derived from voice language code)
-_ACCENT_MAP = {
-    "GB": "british",
-    "US": "american",
-    "AU": "australian",
-    "IN": "indian",
-    "CA": "canadian",
-    "IE": "irish",
-    "ZA": "south_african",
-    "NZ": "new_zealander",
 }
 
 _TTS_MODELS_GUIDANCE = (
@@ -168,9 +156,9 @@ class GoogleCloudSyncer(ProviderSyncer):
                 gender=_GENDER_MAP.get(v.get("ssmlGender") or ""),
                 category="premade",
                 languages=languages,
-                accent=_accent_from_languages(languages),
+                accent=accent_from_languages(languages),
+                compatible_models=[tier],
                 meta={
-                    "tier":           tier,
                     "sample_rate_hz": v.get("naturalSampleRateHertz"),
                 },
             ))
@@ -189,9 +177,9 @@ class GoogleCloudSyncer(ProviderSyncer):
         known = {m.model_id for m in models}
         orphans: dict[str, set[str]] = {}
         for v in voices:
-            tier = v.meta.get("tier")
-            if tier and tier not in known:
-                orphans.setdefault(tier, set()).update(v.languages)
+            for tier in v.compatible_models:
+                if tier not in known:
+                    orphans.setdefault(tier, set()).update(v.languages)
 
         for tier, langs in orphans.items():
             models.append(SyncModel(
@@ -233,14 +221,6 @@ def _extract_tier(voice_name: str) -> str | None:
     return parts[2]
 
 
-def _accent_from_languages(languages: list[str]) -> str | None:
-    for lang in languages:
-        parts = lang.split("-")
-        if len(parts) >= 2 and parts[1].upper() in _ACCENT_MAP:
-            return _ACCENT_MAP[parts[1].upper()]
-    return None
-
-
 # ── Local runner ──────────────────────────────────────────────────────────────
 
 async def _main() -> None:
@@ -277,7 +257,7 @@ async def _main() -> None:
     print(f"\n=== TTS Voices ({len(result.tts_voices)}) — showing first 20 ===")
     for v in result.tts_voices[:20]:
         print(
-            f"  {v.voice_id!r:40} tier={v.meta.get('tier')!r:15} "
+            f"  {v.voice_id!r:40} models={v.compatible_models!r:15} "
             f"gender={v.gender} accent={v.accent} lang={v.languages}"
         )
     if len(result.tts_voices) > 20:
