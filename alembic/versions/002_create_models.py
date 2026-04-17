@@ -40,9 +40,16 @@ def upgrade() -> None:
     op.create_index("idx_models_provider_type", "models", ["provider_id", "type"])
     op.create_index("idx_models_active", "models", ["deprecated_at"],
                     postgresql_where=sa.text("deprecated_at IS NULL"))
+    op.create_index("idx_models_languages_gin", "models", ["languages"],
+                    postgresql_using="gin")
+    op.create_index("idx_models_display_name_trgm", "models", ["display_name"],
+                    postgresql_using="gin",
+                    postgresql_ops={"display_name": "gin_trgm_ops"})
 
 
 def downgrade() -> None:
+    op.drop_index("idx_models_display_name_trgm")
+    op.drop_index("idx_models_languages_gin")
     op.drop_index("idx_models_active")
     op.drop_index("idx_models_provider_type")
     op.drop_table("models")

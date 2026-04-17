@@ -16,6 +16,8 @@ depends_on = None
 
 
 def upgrade() -> None:
+    op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+
     op.create_table(
         "providers",
         sa.Column("id", UUID(as_uuid=True), nullable=False, server_default=sa.text("gen_random_uuid()")),
@@ -24,6 +26,8 @@ def upgrade() -> None:
         sa.Column("type", sa.String(8), nullable=False),
         sa.Column("website", sa.String(256), nullable=True),
         sa.Column("description", sa.Text, nullable=True),
+        sa.Column("source", sa.String(8), nullable=True),
+        sa.Column("last_synced_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("deprecated_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),

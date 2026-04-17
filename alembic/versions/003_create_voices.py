@@ -44,9 +44,23 @@ def upgrade() -> None:
     op.create_index("idx_voices_provider", "voices", ["provider_id"])
     op.create_index("idx_voices_active", "voices", ["deprecated_at"],
                     postgresql_where=sa.text("deprecated_at IS NULL"))
+    op.create_index("idx_voices_gender", "voices", ["gender"])
+    op.create_index("idx_voices_accent", "voices", ["accent"])
+    op.create_index("idx_voices_languages_gin", "voices", ["languages"],
+                    postgresql_using="gin")
+    op.create_index("idx_voices_compatible_models_gin", "voices", ["compatible_models"],
+                    postgresql_using="gin")
+    op.create_index("idx_voices_display_name_trgm", "voices", ["display_name"],
+                    postgresql_using="gin",
+                    postgresql_ops={"display_name": "gin_trgm_ops"})
 
 
 def downgrade() -> None:
+    op.drop_index("idx_voices_display_name_trgm")
+    op.drop_index("idx_voices_compatible_models_gin")
+    op.drop_index("idx_voices_languages_gin")
+    op.drop_index("idx_voices_accent")
+    op.drop_index("idx_voices_gender")
     op.drop_index("idx_voices_active")
     op.drop_index("idx_voices_provider")
     op.drop_table("voices")
