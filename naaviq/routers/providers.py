@@ -70,7 +70,7 @@ async def list_models(
         q = q.where(Model.type == model_type)
 
     total = await db.scalar(select(func.count()).select_from(q.subquery()))
-    rows = await db.execute(q.order_by(Model.display_name).limit(limit).offset(offset))
+    rows = await db.execute(q.order_by(Model.display_name, Model.model_id).limit(limit).offset(offset))
 
     return PaginatedModels(total=total or 0, limit=limit, offset=offset, data=rows.scalars().all())
 
@@ -114,6 +114,6 @@ async def list_voices(
         q = q.where(Voice.display_name.ilike(f"%{search}%"))
 
     total = await db.scalar(select(func.count()).select_from(q.subquery()))
-    rows = await db.execute(q.order_by(Voice.display_name).limit(limit).offset(offset))
+    rows = await db.execute(q.order_by(Voice.display_name, Voice.voice_id).limit(limit).offset(offset))
 
     return PaginatedVoices(total=total or 0, limit=limit, offset=offset, data=rows.scalars().all())

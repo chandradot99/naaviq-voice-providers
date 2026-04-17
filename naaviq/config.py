@@ -14,9 +14,9 @@ class Settings(BaseSettings):
     deepgram_api_key: str = ""
     cartesia_api_key: str = ""
     elevenlabs_api_key: str = ""
-    openai_api_key: str = ""  # reserved for future use
+    openai_api_key: str = ""
     google_cloud_api_key: str = ""
-    sarvam_api_key: str = ""  # reserved for future use
+    sarvam_api_key: str = ""
 
     # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
     anthropic_api_key: str = ""

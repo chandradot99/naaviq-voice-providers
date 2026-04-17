@@ -166,22 +166,36 @@ def _gender_from_tags(tags: set[str]) -> str | None:
 # ── Local runner ──────────────────────────────────────────────────────────────
 
 async def _main() -> None:
+    import sys
+
     syncer = DeepgramSyncer()
-    result = await syncer.sync()
+    try:
+        result = await syncer.sync()
+    except ValueError as e:
+        print(f"\nError: {e}", file=sys.stderr)
+        raise SystemExit(1)
+    except httpx.HTTPStatusError as e:
+        print(f"\nDeepgram API error ({e.response.status_code}): {e.response.text[:300]}", file=sys.stderr)
+        raise SystemExit(1)
 
     print(f"\n=== STT Models ({len(result.stt_models)}) ===")
     for m in result.stt_models:
         print(f"  {m.model_id!r:35} {m.display_name!r:25} langs={len(m.languages)}")
+        if m.meta:
+            print(f"    meta: {m.meta}")
 
     print(f"\n=== TTS Models ({len(result.tts_models)}) ===")
     for m in result.tts_models:
         print(f"  {m.model_id!r:35} {m.display_name!r:25} langs={len(m.languages)}")
 
-    print(f"\n=== TTS Voices ({len(result.tts_voices)}) ===")
-    for v in result.tts_voices:
-        print(f"  {v.voice_id!r:35} {v.display_name!r:20} gender={v.gender} langs={v.languages}")
+    print(f"\n=== TTS Voices ({len(result.tts_voices)}) — showing first 20 ===")
+    for v in result.tts_voices[:20]:
+        print(f"  {v.voice_id!r:35} {v.display_name!r:20} gender={v.gender} models={v.compatible_models}")
+    if len(result.tts_voices) > 20:
+        print(f"  ... and {len(result.tts_voices) - 20} more")
 
-    print(f"\nfetched_at: {result.fetched_at}")
+    print(f"\nSource: {result.source}")
+    print(f"Fetched at: {result.fetched_at}")
 
 
 if __name__ == "__main__":

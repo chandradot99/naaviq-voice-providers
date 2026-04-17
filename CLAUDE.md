@@ -51,15 +51,19 @@ naaviq-voice-providers/
 │   ├── schemas.py        — Pydantic response schemas
 │   ├── limiter.py        — slowapi rate limiter
 │   ├── routers/
-│   │   └── providers.py  — GET /v1/providers, /models, /voices
+│   │   ├── providers.py  — GET /v1/providers, /v1/providers/{id}/models, /voices
+│   │   └── catalog.py    — GET /v1/models, /v1/voices (cross-provider)
 │   └── sync/
 │       ├── base.py       — SyncResult contract + ProviderSyncer base class
-│       ├── language.py   — BCP-47 normalization
-│       ├── ai_parser.py  — Agentic Claude loop for parsing models from docs
+│       ├── language.py   — BCP-47 normalization + ACCENT_MAP
+│       ├── ai_parser.py  — Agentic Claude loop for parsing models/voices from docs
 │       ├── deepgram.py   — Deepgram syncer (api)
-│       ├── cartesia.py   — Cartesia syncer (mixed: API voices + AI-parsed docs models)
-│       └── elevenlabs.py — ElevenLabs syncer (mixed: API TTS + AI-parsed STT)
-├── alembic/              — DB migrations
+│       ├── cartesia.py   — Cartesia syncer (mixed: API voices + AI-parsed models)
+│       ├── elevenlabs.py — ElevenLabs syncer (mixed: API TTS/voices + AI-parsed STT)
+│       ├── openai.py     — OpenAI syncer (docs: AI-parsed TTS/STT models + voices)
+│       ├── google_cloud.py — Google Cloud syncer (mixed: API voices + AI-parsed tiers/STT)
+│       └── sarvam.py     — Sarvam syncer (docs: AI-parsed STT/TTS models + voices)
+├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 indexes)
 ├── tests/
 ├── docker-compose.yml    — Postgres only (for local dev)
 └── CLAUDE.md
@@ -80,7 +84,7 @@ All tables use `deprecated_at` instead of hard deletes. Sync scripts never write
 | Type | When to use | Example providers |
 |---|---|---|
 | `api` | Provider exposes a REST API for both models and voices | Deepgram |
-| `docs` | No API — parse documentation with AI | Sarvam (planned) |
+| `docs` | No API — parse documentation with AI | OpenAI, Sarvam |
 | `mixed` | API for some data (e.g., voices) + docs parsing for the rest (e.g., models) | Cartesia, ElevenLabs |
 
 ### The AI parser (`naaviq/sync/ai_parser.py`)

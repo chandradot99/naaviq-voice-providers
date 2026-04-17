@@ -21,6 +21,8 @@ class Provider(Base):
     type: Mapped[str] = mapped_column(String(8), nullable=False)        # "stt" | "tts" | "both"
     website: Mapped[str | None] = mapped_column(String(256))
     description: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str | None] = mapped_column(String(8))               # "api" | "docs" | "mixed"
+    last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     deprecated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -17,6 +17,8 @@ class ProviderOut(BaseModel):
     type: str
     website: str | None
     description: str | None
+    source: str | None
+    last_synced_at: datetime | None
     deprecated_at: datetime | None
     updated_at: datetime
 
