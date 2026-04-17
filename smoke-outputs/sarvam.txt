@@ -1,0 +1,61 @@
+
+=== STT Models (2) ===
+  'saaras:v3'               'Saaras v3'                    langs=23 [default]
+    meta: {'diarization': True, 'diarization_note': 'batch-only', 'auto_language_detect': True, 'code_mixing': True, 'output_modes': ['transcribe', 'translate', 'verbatim', 'translit', 'codemix'], 'max_audio_duration_rest': '30s', 'max_audio_duration_batch': '1h'}
+  'saarika:v2.5'            'Saarika v2.5'                 langs=11
+    meta: {'diarization': True, 'diarization_note': 'batch-only', 'auto_language_detect': True, 'code_mixing': False, 'output_modes': ['transcribe'], 'max_audio_duration_rest': '30s', 'max_audio_duration_batch': '1h'}
+
+=== TTS Models (2) ===
+  'bulbul:v3'               'Bulbul v3'                    langs=11 [default]
+    meta: {'max_characters': 2500, 'temperature_control': True, 'pitch_control': False, 'loudness_control': False, 'num_speakers': 30}
+  'bulbul:v2'               'Bulbul v2'                    langs=11
+    meta: {'max_characters': 1500, 'temperature_control': False, 'pitch_control': True, 'loudness_control': True, 'num_speakers': 7}
+
+=== TTS Voices (44) ===
+  'shubh'         'Shubh'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={'is_default_speaker': True}
+  'aditya'        'Aditya'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'ritu'          'Ritu'          gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'priya'         'Priya'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'neha'          'Neha'          gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'rahul'         'Rahul'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'pooja'         'Pooja'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'rohan'         'Rohan'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'simran'        'Simran'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'kavya'         'Kavya'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'amit'          'Amit'          gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'dev'           'Dev'           gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'ishita'        'Ishita'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'shreya'        'Shreya'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'ratan'         'Ratan'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'varun'         'Varun'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'manan'         'Manan'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'sumit'         'Sumit'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'roopa'         'Roopa'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'kabir'         'Kabir'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'aayan'         'Aayan'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'ashutosh'      'Ashutosh'      gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'advait'        'Advait'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'anand'         'Anand'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'tanya'         'Tanya'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'tarun'         'Tarun'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'sunny'         'Sunny'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'mani'          'Mani'          gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'gokul'         'Gokul'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'vijay'         'Vijay'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'shruti'        'Shruti'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'suhani'        'Suhani'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'mohit'         'Mohit'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'kavitha'       'Kavitha'       gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'rehan'         'Rehan'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'soham'         'Soham'         gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'rupali'        'Rupali'        gender=None langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'anushka'       'Anushka'       gender=female langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={'is_default_speaker': True}
+  'manisha'       'Manisha'       gender=female langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'vidya'         'Vidya'         gender=female langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'arya'          'Arya'          gender=female langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'abhilash'      'Abhilash'      gender=male langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'karun'         'Karun'         gender=male langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+  'hitesh'        'Hitesh'        gender=male langs=['en-IN', 'hi-IN', 'ta-IN', 'bn-IN'] meta={}
+
+=== Notes ===
+  STT models: 2 from 3 page(s). TTS models: 2 from 2 page(s). TTS voices: 44 from 5 page(s). AI: 104213 in / 7018 out tokens (claude-haiku-4-5-20251001).

@@ -1,0 +1,65 @@
+
+=== STT Models (2) ===
+  'ink-whisper'                  'Ink Whisper'                  langs=100 [default]
+    meta: {'parent_model_id': None, 'is_snapshot': False, 'snapshot_date': None, 'production_recommended': True}
+  'ink-whisper-2025-06-04'       'Ink Whisper 2025-06-04'       langs=100
+    meta: {'parent_model_id': 'ink-whisper', 'is_snapshot': True, 'snapshot_date': '2025-06-04', 'production_recommended': True}
+
+=== TTS Models (15) ===
+  'sonic-3'                      'Sonic 3'                      langs=42 [default]
+    meta: {'parent_model_id': None, 'is_snapshot': False, 'snapshot_date': None, 'production_recommended': True}
+  'sonic-3-2026-01-12'           'Sonic 3 (2026-01-12)'         langs=42
+    meta: {'parent_model_id': 'sonic-3', 'is_snapshot': True, 'snapshot_date': '2026-01-12', 'production_recommended': True}
+  'sonic-3-2025-10-27'           'Sonic 3 (2025-10-27)'         langs=42
+    meta: {'parent_model_id': 'sonic-3', 'is_snapshot': True, 'snapshot_date': '2025-10-27', 'production_recommended': True}
+  'sonic-3-latest'               'Sonic 3 (Latest Beta)'        langs=42
+    meta: {'parent_model_id': 'sonic-3', 'is_snapshot': False, 'snapshot_date': None, 'production_recommended': False}
+  'sonic-2'                      'Sonic 2'                      langs=15
+    meta: {'parent_model_id': None, 'is_snapshot': False, 'snapshot_date': None, 'production_recommended': True}
+  'sonic-2-2025-06-11'           'Sonic 2 (2025-06-11)'         langs=15
+    meta: {'parent_model_id': 'sonic-2', 'is_snapshot': True, 'snapshot_date': '2025-06-11', 'production_recommended': True}
+  'sonic-2-2025-05-08'           'Sonic 2 (2025-05-08)'         langs=15
+    meta: {'parent_model_id': 'sonic-2', 'is_snapshot': True, 'snapshot_date': '2025-05-08', 'production_recommended': True}
+  'sonic-2-2025-04-16'           'Sonic 2 (2025-04-16)'         langs=15
+    meta: {'parent_model_id': 'sonic-2', 'is_snapshot': True, 'snapshot_date': '2025-04-16', 'production_recommended': True}
+  'sonic-2-2025-03-07'           'Sonic 2 (2025-03-07)'         langs=15
+    meta: {'parent_model_id': 'sonic-2', 'is_snapshot': True, 'snapshot_date': '2025-03-07', 'production_recommended': True}
+  'sonic-turbo'                  'Sonic Turbo'                  langs=15
+    meta: {'parent_model_id': None, 'is_snapshot': False, 'snapshot_date': None, 'production_recommended': True}
+  'sonic-turbo-2025-06-04'       'Sonic Turbo (2025-06-04)'     langs=15
+    meta: {'parent_model_id': 'sonic-turbo', 'is_snapshot': True, 'snapshot_date': '2025-06-04', 'production_recommended': True}
+  'sonic-turbo-2025-03-07'       'Sonic Turbo (2025-03-07)'     langs=15
+    meta: {'parent_model_id': 'sonic-turbo', 'is_snapshot': True, 'snapshot_date': '2025-03-07', 'production_recommended': True}
+  'sonic'                        'Sonic'                        langs=15
+    meta: {'parent_model_id': None, 'is_snapshot': False, 'snapshot_date': None, 'production_recommended': True}
+  'sonic-2024-12-12'             'Sonic (2024-12-12)'           langs=15
+    meta: {'parent_model_id': 'sonic', 'is_snapshot': True, 'snapshot_date': '2024-12-12', 'production_recommended': True}
+  'sonic-2024-10-19'             'Sonic (2024-10-19)'           langs=15
+    meta: {'parent_model_id': 'sonic', 'is_snapshot': True, 'snapshot_date': '2024-10-19', 'production_recommended': True}
+
+=== TTS Voices (725) — showing first 20 ===
+  'e07c00bc-4134-4eae-9ea4-1a55fb45746b'   'Brooke - Big Sister'     gender=female accent=None lang=['en']
+  'f786b574-daa5-4673-aa0c-cbe3e8534c02'   'Katie - Friendly Fixer'  gender=female accent=None lang=['en']
+  '9626c31c-bec5-4cca-baa8-f8ba9e84c8bc'   'Jacqueline - Reassuring Agent' gender=female accent=None lang=['en']
+  'f9836c6e-a0bd-460e-9d3c-f7299fa60f94'   'Caroline - Southern Guide' gender=female accent=None lang=['en']
+  '5ee9feff-1265-424a-9d7f-8e4d431a12c7'   'Ronald - Thinker'        gender=male accent=None lang=['en']
+  'a167e0f3-df7e-4d52-a9c3-f949145efdab'   'Blake - Helpful Agent'   gender=male accent=None lang=['en']
+  'faf0731e-dfb9-4cfc-8119-259a79b27e12'   'Riya - College Roommate' gender=female accent=None lang=['hi']
+  'e8e5fffb-252c-436d-b842-8879b84445b6'   'Cathy - Coworker'        gender=female accent=None lang=['en']
+  '95d51f79-c397-46f9-b49a-23763d3eaa2d'   'Arushi - Hinglish Speaker' gender=female accent=None lang=['hi']
+  '79f8b5fb-2cc8-479a-80df-29f7a7cf1a3e'   'Theo - Modern Narrator'  gender=male accent=None lang=['en']
+  '62ae83ad-4f6a-430b-af41-a9bede9286ca'   'Gemma - Decisive Agent'  gender=female accent=None lang=['en']
+  '15d0c2e2-8d29-44c3-be23-d585d5f154a1'   'Pedro - Formal Speaker'  gender=male accent=None lang=['es']
+  'db6b0ed5-d5d3-463d-ae85-518a07d3c2b4'   'Skylar - Friendly Guide' gender=female accent=None lang=['en']
+  '2f251ac3-89a9-4a77-a452-704b474ccd01'   'Lucy - Capable Coordinator' gender=female accent=None lang=['en']
+  'a4a16c5e-5902-4732-b9b6-2a48efd2e11b'   'Grace - Helpful Hand'    gender=female accent=None lang=['en']
+  'a33f7a4c-100f-41cf-a1fd-5822e8fc253f'   'Lauren - Lively Narrator' gender=female accent=None lang=['en']
+  'a5136bf9-224c-4d76-b823-52bd5efcffcc'   'Jameson - Easygoing Support' gender=male accent=None lang=['en']
+  'bec003e2-3cb3-429c-8468-206a393c67ad'   'Parvati - Friendly Supporter' gender=female accent=None lang=['hi']
+  '1242fb95-7ddd-44ac-8a05-9e8a22a6137d'   'Cindy - Receptionist'    gender=female accent=None lang=['en']
+  'ee7ea9f8-c0c1-498c-9279-764d6b56d189'   'Oliver - Customer Chap'  gender=male accent=None lang=['en']
+  ... and 705 more
+
+Source: mixed
+Notes:  Voices: 725 from 8 API page(s). TTS models: 15 from 2 doc page(s). STT models: 2 from 1 doc page(s). AI: 10089 in / 5254 out tokens (claude-haiku-4-5-20251001).
+Fetched at: 2026-04-17 12:45:31.789457+00:00

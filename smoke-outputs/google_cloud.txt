@@ -1,0 +1,54 @@
+
+=== STT Models (3) ===
+  'chirp_3'                 'Chirp 3'                      langs=1 [default]
+    meta: {'diarization': True, 'auto_language_detect': True, 'specialization': None}
+  'chirp_2'                 'Chirp 2'                      langs=1
+    meta: {'diarization': False, 'auto_language_detect': False, 'specialization': None}
+  'telephony'               'Telephony'                    langs=1
+    meta: {'diarization': False, 'auto_language_detect': False, 'specialization': 'telephony'}
+
+=== TTS Models (9) ===
+  'Standard'                'Standard'                     langs=1
+    meta: {'is_ga': True, 'ssml_support': True, 'tier_class': 'standard'}
+  'Wavenet'                 'Wavenet'                      langs=1
+    meta: {'is_ga': True, 'ssml_support': True, 'tier_class': 'premium'}
+  'Neural2'                 'Neural2'                      langs=1
+    meta: {'is_ga': True, 'ssml_support': True, 'tier_class': 'premium'}
+  'Studio'                  'Studio'                       langs=1
+    meta: {'is_ga': True, 'ssml_support': True, 'tier_class': 'premium', 'multispeaker': False}
+  'Chirp-HD'                'Chirp-HD'                     langs=1
+    meta: {'is_ga': False, 'ssml_support': False, 'tier_class': 'premium'}
+  'Chirp3-HD'               'Chirp3-HD'                    langs=1 [default]
+    meta: {'is_ga': True, 'ssml_support': False, 'tier_class': 'premium'}
+  'Polyglot'                'Polyglot'                     langs=6 (orphan)
+    meta: {'is_ga': False, 'orphan': True}
+  'News'                    'News'                         langs=4 (orphan)
+    meta: {'is_ga': False, 'orphan': True}
+  'Casual'                  'Casual'                       langs=1 (orphan)
+    meta: {'is_ga': False, 'orphan': True}
+
+=== TTS Voices (2036) — showing first 20 ===
+  'af-ZA-Standard-A'                       models=['Standard']    gender=female accent=south_african lang=['af-ZA']
+  'am-ET-Standard-A'                       models=['Standard']    gender=female accent=None lang=['am-ET']
+  'am-ET-Standard-B'                       models=['Standard']    gender=male accent=None lang=['am-ET']
+  'am-ET-Wavenet-A'                        models=['Wavenet']     gender=female accent=None lang=['am-ET']
+  'am-ET-Wavenet-B'                        models=['Wavenet']     gender=male accent=None lang=['am-ET']
+  'ar-XA-Chirp3-HD-Achernar'               models=['Chirp3-HD']   gender=female accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Achird'                 models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Algenib'                models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Algieba'                models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Alnilam'                models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Aoede'                  models=['Chirp3-HD']   gender=female accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Autonoe'                models=['Chirp3-HD']   gender=female accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Callirrhoe'             models=['Chirp3-HD']   gender=female accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Charon'                 models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Despina'                models=['Chirp3-HD']   gender=female accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Enceladus'              models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Erinome'                models=['Chirp3-HD']   gender=female accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Fenrir'                 models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Gacrux'                 models=['Chirp3-HD']   gender=female accent=None lang=['ar-XA']
+  'ar-XA-Chirp3-HD-Iapetus'                models=['Chirp3-HD']   gender=male accent=None lang=['ar-XA']
+  ... and 2016 more
+
+Source: mixed
+Notes:  Voices: 2036 from /v1/voices. TTS models: 9 from 1 doc page(s). STT models: 3 from 1 doc page(s). AI: 28977 in / 1876 out tokens (claude-haiku-4-5-20251001).

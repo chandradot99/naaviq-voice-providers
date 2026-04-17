@@ -62,7 +62,9 @@ naaviq-voice-providers/
 │       ├── elevenlabs.py — ElevenLabs syncer (mixed: API TTS/voices + AI-parsed STT)
 │       ├── openai.py     — OpenAI syncer (docs: AI-parsed TTS/STT models + voices)
 │       ├── google_cloud.py — Google Cloud syncer (mixed: API voices + AI-parsed tiers/STT)
-│       └── sarvam.py     — Sarvam syncer (docs: AI-parsed STT/TTS models + voices)
+│       ├── sarvam.py     — Sarvam syncer (docs: AI-parsed STT/TTS models + voices)
+│       ├── azure.py      — Azure Speech syncer (api: API voices + derived TTS models + synthetic STT)
+│       └── amazon_polly.py — Amazon Polly syncer (api: API voices + derived TTS models; TTS-only)
 ├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 indexes)
 ├── tests/
 ├── docker-compose.yml    — Postgres only (for local dev)
@@ -181,6 +183,16 @@ ELEVENLABS_API_KEY=... ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.eleven
 ```
 
 This prints the parsed models/voices but never touches the DB.
+
+## Development strategy
+
+**No DB population until all providers are implemented.**
+
+Schema changes (new columns, indexes) are cheap pre-production — just downgrade, edit the migration, upgrade. Migrating live data is expensive. So during development:
+
+- Test each syncer with smoke tests only: `uv run python -m naaviq.sync.<provider>`
+- Never run apply through the admin UI until all providers are shipped and the schema is stable
+- Once all planned providers are done → single production sync of all providers
 
 ## Quick start
 

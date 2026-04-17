@@ -1,0 +1,30 @@
+
+=== TTS Models (2) ===
+  'polly-neural'            'Polly Neural'         langs=35 is_default=True
+  'polly-standard'          'Polly Standard'       langs=28 is_default=False
+
+=== TTS Voices (100) — showing first 20 ===
+  'Isabelle'      'Isabelle'      gender=female langs=['fr-BE'] models=['polly-neural']
+  'Danielle'      'Danielle'      gender=female langs=['en-US'] models=['polly-neural']
+  'Gregory'       'Gregory'       gender=male   langs=['en-US'] models=['polly-neural']
+  'Burcu'         'Burcu'         gender=female langs=['tr-TR'] models=['polly-neural']
+  'Jitka'         'Jitka'         gender=female langs=['cs-CZ'] models=['polly-neural']
+  'Sabrina'       'Sabrina'       gender=female langs=['de-CH'] models=['polly-neural']
+  'Joanna'        'Joanna'        gender=female langs=['en-US'] models=['polly-neural', 'polly-standard']
+  'Ruth'          'Ruth'          gender=female langs=['en-US'] models=['polly-neural']
+  'Lupe'          'Lupe'          gender=female langs=['es-US'] models=['polly-neural', 'polly-standard']
+  'Jasmine'       'Jasmine'       gender=female langs=['en-SG'] models=['polly-neural']
+  'Jihye'         'Jihye'         gender=female langs=['ko-KR'] models=['polly-neural']
+  'Kevin'         'Kevin'         gender=male   langs=['en-US'] models=['polly-neural']
+  'Filiz'         'Filiz'         gender=female langs=['tr-TR'] models=['polly-standard']
+  'Elin'          'Elin'          gender=female langs=['sv-SE'] models=['polly-neural']
+  'Astrid'        'Astrid'        gender=female langs=['sv-SE'] models=['polly-standard']
+  'Tatyana'       'Tatyana'       gender=female langs=['ru-RU'] models=['polly-standard']
+  'Maxim'         'Maxim'         gender=male   langs=['ru-RU'] models=['polly-standard']
+  'Carmen'        'Carmen'        gender=female langs=['ro-RO'] models=['polly-standard']
+  'Ines'          'Inês'          gender=female langs=['pt-PT'] models=['polly-neural', 'polly-standard']
+  'Cristiano'     'Cristiano'     gender=male   langs=['pt-PT'] models=['polly-standard']
+  ... and 80 more
+
+Source: api
+Fetched at: 2026-04-17 12:49:22.080911+00:00

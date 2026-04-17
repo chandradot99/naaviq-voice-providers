@@ -10,9 +10,22 @@
 | OpenAI | `docs` | ✅ Shipped (AI-parsed TTS/STT models + voices) |
 | Google Cloud | `mixed` | ✅ Shipped (API voices + AI-parsed TTS tiers + STT models; orphan-tier injection for legacy voices) |
 | Sarvam | `docs` | ✅ Shipped (AI-parsed STT/TTS models + 44 voices; first all-Indian-language provider) |
-| **Azure** | `api` | 🟡 **Next priority** — richest voice API, no AI-parsing needed |
-| Amazon Polly | `api` or `mixed` | ⬜ After Azure (TTS only) |
-| PlayHT | `mixed` | ⬜ After Polly |
+| Azure | `api` | ✅ Shipped (API voices + derived TTS models + 2 synthetic STT entries) |
+| Amazon Polly | `api` | ✅ Shipped (API voices + derived TTS models; TTS-only, no STT) |
+| **PlayHT** | `mixed` | 🟡 **Next priority** |
+
+---
+
+## Development strategy
+
+**No DB population until all providers are implemented.**
+
+Each new provider may reveal schema gaps (new columns, indexes, constraints) that require migrations. Squashing migrations pre-production is cheap; migrating live data is expensive. So:
+
+- During implementation: smoke test only (`uv run python -m naaviq.sync.<provider>`) — verifies the syncer returns valid data but never writes to DB
+- Schema changes stay cheap: downgrade → edit migrations → upgrade with no data loss concern
+- Once all planned providers are implemented and the schema is stable → single production sync of all providers
+- This also means the admin UI sync workflow (fetch → diff → apply) is only tested end-to-end in production
 
 ---
 
@@ -36,110 +49,20 @@ The `source` value is informational — it labels the dominant approach. Provena
 
 ---
 
-## Next priority: Azure Speech (`api`)
+## Azure Speech — shipped
 
-Microsoft Azure AI Speech Service. Richest voice API of any provider — returns VoiceType,
-Gender, Locale, StyleList, RolePlayList, WordsPerMinute, SampleRateHertz, Status per voice.
-STT is locale-based with no named models (unlike Deepgram/Google).
+`naaviq/sync/azure.py` — `api` source.
 
-### Source: `api`
+- TTS voices from `GET https://{region}.tts.speech.microsoft.com/cognitiveservices/voices/list`
+- TTS models: `azure-neural` (default) and `azure-standard`, derived from `VoiceType` values
+- STT models: two synthetic entries — `azure-stt-realtime` (streaming) and `azure-stt-batch`
+- Skips non-GA voices (`Status != "GA"`)
+- `compatible_models = [azure-neural | azure-standard]` per voice
+- `SecondaryLocaleList` included in `languages` for multilingual voices
+- Auth: `Ocp-Apim-Subscription-Key` header, `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`
 
-All data comes from the voices REST API. No AI-parsing needed.
-
-- TTS voices: `GET https://{region}.tts.speech.microsoft.com/cognitiveservices/voices/list`
-- TTS models: derived from voice API `VoiceType` field (`Neural`, `Standard`)
-- STT models: see open question below
-
-### Auth
-
-`Ocp-Apim-Subscription-Key: {key}` header. Requires an Azure AI Speech resource.
-Two config values: `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` (needed to construct the regional endpoint).
-
-### What the voices API returns
-
-```json
-{
-    "Name": "Microsoft Server Speech Text to Speech Voice (en-US, JennyNeural)",
-    "DisplayName": "Jenny",
-    "LocalName": "Jenny",
-    "ShortName": "en-US-JennyNeural",
-    "Gender": "Female",
-    "Locale": "en-US",
-    "LocaleName": "English (United States)",
-    "StyleList": ["assistant", "chat", "customerservice", "newscast", "angry", "cheerful", ...],
-    "SampleRateHertz": "24000",
-    "VoiceType": "Neural",
-    "Status": "GA",
-    "ExtendedPropertyMap": {"IsHighQuality48K": "True"},
-    "WordsPerMinute": "152"
-}
-```
-
-Also has `SecondaryLocaleList` for multilingual voices and `RolePlayList` for character roles.
-No pagination — returns all voices for the region in one response.
-
-### Syncer shape
-
-```python
-class AzureSyncer(ProviderSyncer):
-    provider_id = "azure"
-    source = "api"
-
-    async def sync(self) -> SyncResult:
-        voices_data = await self._fetch_voices()
-        tts_voices = self._parse_voices(voices_data)
-        tts_models = self._derive_models(voices_data)  # from VoiceType field
-        return SyncResult(
-            stt_models=[],  # or synthetic entries — see open question
-            tts_models=tts_models,
-            tts_voices=tts_voices,
-            source=self.source,
-        )
-```
-
-Single API call — no AI parser needed, no concurrency needed. Fastest syncer yet.
-
-### Voice mapping
-
-- `voice_id` = `ShortName` (e.g., `en-US-JennyNeural`) — this is what you pass to the synthesis API
-- `display_name` = `DisplayName` (e.g., `Jenny`)
-- `gender` = `Gender` lowercased
-- `languages` = `[Locale]` + `SecondaryLocaleList` (for multilingual voices)
-- `accent` = derived from Locale region (same `_ACCENT_MAP` as Cartesia/Google)
-- `meta` = `StyleList`, `RolePlayList`, `VoiceType`, `Status`, `WordsPerMinute`, `SampleRateHertz`
-
-### TTS models (derived, not parsed)
-
-Almost all Azure voices are `Neural` now (`Standard` is being deprecated). Derive models from unique `VoiceType` values in the voice list — likely just 2 entries: `Neural` (default) and `Standard`. Each model's languages = union of all voices with that VoiceType.
-
-### Changes needed
-
-#### `naaviq-voice-providers`
-- `naaviq/sync/azure.py` — new file
-- `naaviq/config.py` — `azure_speech_key: str = ""`, `azure_speech_region: str = ""`
-- `.env.example` — `AZURE_SPEECH_KEY=`, `AZURE_SPEECH_REGION=eastus`
-
-#### `naaviq-admin`
-- `naaviq_admin/config.py` — `azure_speech_key: str = ""`, `azure_speech_region: str = ""`
-- `.env.example` — `AZURE_SPEECH_KEY=`, `AZURE_SPEECH_REGION=eastus`
-- `naaviq_admin/routers/providers.py` — register `"azure": "naaviq.sync.azure.AzureSyncer"` in `_SYNCERS`
-
-### Open questions (resolve during implementation)
-
-1. **STT models**: Azure STT has no named models — it's locale-based with 3 modes (realtime, fast, batch). Options:
-   - (a) `stt_models=[]` — simplest, but hides that Azure has STT
-   - (b) Synthetic entries: `azure-stt-realtime` (streaming=true), `azure-stt-batch` (streaming=false) with `languages=['*']`
-   - (c) Single entry: `default` with streaming=true and meta describing all modes
-   Plan leans toward (b) — gives users a meaningful choice and maps to our schema
-
-2. **Region**: Which region to use for the voice list? All regions return the same global voice catalog. Default `eastus` is fine.
-
-3. **Filter**: Skip custom/preview voices? Probably filter to `Status: "GA"` only, show preview voices in a separate sync or via meta flag.
-
-### Smoke-test command
-
+Smoke-test:
 ```bash
-uv sync
 AZURE_SPEECH_KEY=... AZURE_SPEECH_REGION=eastus uv run python -m naaviq.sync.azure
 ```
 
@@ -163,6 +86,30 @@ AZURE_SPEECH_KEY=... AZURE_SPEECH_REGION=eastus uv run python -m naaviq.sync.azu
 - Friendly errors for auth / low credit / rate limit / connection failures
 
 **System prompt is cached** via `cache_control: ephemeral` — multiple parses against the same docs (or within one syncer) amortize the prompt cost.
+
+---
+
+## Future initiative: Naaviq Voice Spec
+
+Once all planned providers are implemented, extract the patterns into an open spec.
+
+**Why**: No open standard exists for voice provider APIs. OpenAI's `/v1/audio/speech` and `/v1/audio/transcriptions` are an informal de facto standard for inference wrappers, but nothing covers voice/model discovery, capability metadata (languages, streaming, engines), or a unified runtime interface across providers.
+
+**Two layers**:
+
+- **Layer 1 — Registry/Discovery** (Naaviq already implements):
+  `GET /v1/voices`, `/v1/models`, `/v1/providers` — standard metadata shape, filters, pagination
+- **Layer 2 — Synthesis/Transcription** (runtime, what clients call):
+  `POST /v1/tts/synthesize`, `POST /v1/stt/transcribe`, WebSocket streams for real-time
+
+A provider that implements both layers is "Naaviq-compatible" — one client SDK works with all of them.
+
+**Path**:
+1. ✅ Build the registry (now — understand all provider variation first)
+2. ⬜ Publish `naaviq-spec` repo — OpenAPI YAML + reference docs. Providers self-certify.
+3. ⬜ Naaviq-compatible gateway — proxy that normalizes requests behind the spec
+
+The registry must come before the spec. Once all providers are in, the patterns will be clear enough to draft it well.
 
 ---
 
