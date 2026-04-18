@@ -1,0 +1,10 @@
+
+=== STT Models (3) ===
+  'machine'    [streaming] langs=['*'] is_default=True
+  'low_cost'   [streaming] langs=['en'] is_default=False
+  'fusion'     [streaming] langs=['en'] is_default=False
+
+Source: docs
+Fetched at: 2026-04-18 09:31:11.870557+00:00
+
+Notes: {'urls_fetched': ['https://docs.rev.ai/api/asynchronous/transcribers/', 'https://docs.rev.ai/api/streaming/', 'https://docs.rev.ai/api/asynchronous/', 'https://docs.rev.ai/api/asynchronous/reference/', 'https://docs.rev.ai/api/asynchronous/reference/jobs/', 'https://docs.rev.ai/api/streaming/get-started/', 'https://docs.rev.ai/api/streaming/best-practices/', 'https://docs.rev.ai/api/streaming/code-samples/'], 'model': 'claude-haiku-4-5-20251001', 'input_tokens': 168591, 'output_tokens': 1564}
