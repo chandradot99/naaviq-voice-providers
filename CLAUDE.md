@@ -18,13 +18,22 @@ Open-source voice provider registry. A public read-only REST API that serves met
 
 ### How it all fits together
 
+The sync scripts (`naaviq/sync/*.py`) are the single source of truth for fetching provider data. Two paths can orchestrate the fetch→diff→apply — both produce identical results:
+
+**Path A — Claude Code (primary, zero per-token cost):**
+1. Run `uv run python scripts/sync.py [provider]` — fetches live data, shows diff, applies to dev DB
+2. Review changes in dev DB
+3. Run `uv run python scripts/promote.py` — copies dev → prod (no AI parsing, pure data copy)
+
+**Path B — Admin UI (alternative, when visual diff review is preferred):**
 1. **Community** contributes sync scripts for new providers via PRs to this repo (`naaviq/sync/`)
 2. **Your team** reviews + merges the PR
 3. **Your team** clicks "Fetch" in `naaviq-admin-ui` → calls `naaviq-admin` API
 4. **`naaviq-admin`** imports and runs the sync script → fetches live data → returns the result for review (no DB write)
 5. **Your team** reviews the diff in admin UI (new models/voices added, deprecated ones flagged)
 6. **Your team** clicks "Apply" → `naaviq-admin` upserts into the shared DB
-7. **`naaviq-voice-providers`** (this repo) serves the updated data via the public read API
+
+Both paths use the same `naaviq/sync/*.py` scripts — swapping between them produces identical DB state.
 
 ### Why sync logic lives here but apply lives in naaviq-admin
 
@@ -71,7 +80,11 @@ naaviq-voice-providers/
 │       ├── speechmatics.py — Speechmatics syncer (docs: AI-parsed STT models; STT-only)
 │       ├── lmnt.py       — LMNT syncer (mixed: API voices + derived TTS models; TTS-only)
 │       ├── rime.py       — Rime AI syncer (api: API voices + derived TTS models; TTS-only)
-│       └── assemblyai.py — AssemblyAI syncer (docs: AI-parsed STT models; STT-only)
+│       ├── assemblyai.py — AssemblyAI syncer (docs: AI-parsed STT models; STT-only)
+│       └── revai.py      — Rev AI syncer (docs: AI-parsed STT models; STT-only)
+├── scripts/
+│   ├── sync.py           — run syncers, diff vs dev DB, apply to dev DB
+│   └── promote.py        — copy dev DB state → prod DB (zero token cost)
 ├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 indexes)
 ├── tests/
 ├── docker-compose.yml    — Postgres only (for local dev)
@@ -182,7 +195,8 @@ class MyProviderSyncer(ProviderSyncer):
 7. For `docs` / `mixed` source: call `parse_models_from_docs(seed_urls=…, guidance=…)` for the parts that aren't in an API
 8. Add an env var to `naaviq/config.py` and `.env.example` if the syncer needs an API key
 9. Register in `naaviq-admin/naaviq_admin/routers/providers.py` `_SYNCERS` dict
-10. Submit a PR
+10. Add to `_SYNCERS` and `_PROVIDER_META` in `scripts/sync.py`
+11. Submit a PR
 
 ### Smoke testing a syncer
 
@@ -195,6 +209,29 @@ ELEVENLABS_API_KEY=... ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.eleven
 
 This prints the parsed models/voices but never touches the DB.
 
+## Sync workflow
+
+Two paths — both use the same sync scripts, both produce identical DB state:
+
+### Path A: Claude Code (primary)
+
+```bash
+# Sync one or all providers to dev DB
+uv run python scripts/sync.py                    # all providers
+uv run python scripts/sync.py cartesia -y        # one provider, skip confirmation
+
+# Promote dev → prod when happy
+uv run python scripts/promote.py
+```
+
+- Uses Claude Code subscription for AI parsing — no per-token API cost
+- `DATABASE_URL` in `.env` = dev DB
+- `PROD_DATABASE_URL` in `.env` = prod DB (only needed for promote)
+
+### Path B: Admin UI
+
+Fetch → diff → apply via the `naaviq-admin` API and `naaviq-admin-ui` frontend. Good for visual diff review. Uses `ANTHROPIC_API_KEY` tokens for AI-parsed providers.
+
 ## Development strategy
 
 **No DB population until all providers are implemented.**
@@ -202,8 +239,7 @@ This prints the parsed models/voices but never touches the DB.
 Schema changes (new columns, indexes) are cheap pre-production — just downgrade, edit the migration, upgrade. Migrating live data is expensive. So during development:
 
 - Test each syncer with smoke tests only: `uv run python -m naaviq.sync.<provider>`
-- Never run apply through the admin UI until all providers are shipped and the schema is stable
-- Once all planned providers are done → single production sync of all providers
+- Once all planned providers are done → run `scripts/sync.py` to populate dev DB, review, then `scripts/promote.py` to push to prod
 
 ## Quick start
 
