@@ -47,6 +47,7 @@ _SYNCERS: dict[str, str] = {
     "rime":         "naaviq.sync.rime.RimeSyncer",
     "assemblyai":   "naaviq.sync.assemblyai.AssemblyAISyncer",
     "revai":        "naaviq.sync.revai.RevAISyncer",
+    "gladia":       "naaviq.sync.gladia.GladiaSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -66,6 +67,7 @@ _PROVIDER_META: dict[str, dict] = {
     "rime":         {"display_name": "Rime AI",       "type": "tts"},
     "assemblyai":   {"display_name": "AssemblyAI",    "type": "stt"},
     "revai":        {"display_name": "Rev AI",        "type": "stt"},
+    "gladia":       {"display_name": "Gladia",        "type": "stt"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}

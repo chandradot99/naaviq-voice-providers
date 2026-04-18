@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     lmnt_api_key: str = ""
     assemblyai_api_key: str = ""
     revai_api_key: str = ""
+    gladia_api_key: str = ""
 
     # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
     anthropic_api_key: str = ""

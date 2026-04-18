@@ -21,8 +21,9 @@
 | Rime AI | `api` | ✅ Shipped (API voices + derived TTS models; TTS-only, 404 unique voices, 4 models) |
 | AssemblyAI | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 6 models) |
 | Rev AI | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 3 models) |
+| Gladia | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 1 model — solaria-1, 130+ langs) |
 
-**All planned providers are shipped. Dev DB is populated (16 providers, 116 models, 4,550 voices).**
+**All planned providers are shipped. Dev DB is populated (17 providers, 117 models, 4,550 voices).**
 
 ---
 
