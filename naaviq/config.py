@@ -7,7 +7,8 @@ load_dotenv()
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
 
-    database_url: str
+    database_url: str                      # dev / local DB
+    prod_database_url: str = ""            # prod DB — only needed for scripts/promote.py
     rate_limit: str = "100/minute"
 
     # Provider API keys — used by sync scripts
