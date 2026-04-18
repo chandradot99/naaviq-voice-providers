@@ -217,20 +217,29 @@ Two paths — both use the same sync scripts, both produce identical DB state:
 
 ```bash
 # Sync one or all providers to dev DB
-uv run python scripts/sync.py                    # all providers
-uv run python scripts/sync.py cartesia -y        # one provider, skip confirmation
+uv run python scripts/sync.py                    # dry-run: show diff
+uv run python scripts/sync.py cartesia --apply   # apply one provider
+uv run python scripts/sync.py --apply            # apply all
 
 # Promote dev → prod when happy
-uv run python scripts/promote.py
+uv run python scripts/promote.py                 # dry-run: show diff
+uv run python scripts/promote.py --apply         # promote to prod
 ```
 
-- Uses Claude Code subscription for AI parsing — no per-token API cost
 - `DATABASE_URL` in `.env` = dev DB
 - `PROD_DATABASE_URL` in `.env` = prod DB (only needed for promote)
 
+**Important — ANTHROPIC_API_KEY is still needed for AI-parsed providers.**
+Claude Code orchestrates *when* to run syncs, but the sync scripts for `docs`/`mixed`
+providers (cartesia, elevenlabs, openai, google-cloud, sarvam, humeai, inworld,
+speechmatics, assemblyai, revai) still call the Anthropic API internally via
+`parse_models_from_docs`. This is a separate call from Claude Code itself.
+Providers that use only REST APIs (deepgram, azure, amazon-polly, murf, lmnt, rime)
+do NOT need ANTHROPIC_API_KEY.
+
 ### Path B: Admin UI
 
-Fetch → diff → apply via the `naaviq-admin` API and `naaviq-admin-ui` frontend. Good for visual diff review. Uses `ANTHROPIC_API_KEY` tokens for AI-parsed providers.
+Fetch → diff → apply via the `naaviq-admin` API and `naaviq-admin-ui` frontend. Good for visual diff review. Also requires `ANTHROPIC_API_KEY` for AI-parsed providers.
 
 ## Development strategy
 
