@@ -22,8 +22,9 @@
 | AssemblyAI | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 6 models) |
 | Rev AI | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 3 models) |
 | Gladia | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 1 model — solaria-1, 130+ langs) |
+| MiniMax | `mixed` | ✅ Shipped (API voices + derived TTS models; TTS-only, 8 models, 332 voices, 38 langs) |
 
-**All planned providers are shipped. Dev DB is populated (17 providers, 117 models, 4,550 voices).**
+**All planned providers are shipped. Dev DB is populated (18 providers, 125 models, 4,882 voices).**
 
 ---
 

@@ -48,6 +48,7 @@ _SYNCERS: dict[str, str] = {
     "assemblyai":   "naaviq.sync.assemblyai.AssemblyAISyncer",
     "revai":        "naaviq.sync.revai.RevAISyncer",
     "gladia":       "naaviq.sync.gladia.GladiaSyncer",
+    "minimax":      "naaviq.sync.minimax.MinimaxSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -68,6 +69,7 @@ _PROVIDER_META: dict[str, dict] = {
     "assemblyai":   {"display_name": "AssemblyAI",    "type": "stt"},
     "revai":        {"display_name": "Rev AI",        "type": "stt"},
     "gladia":       {"display_name": "Gladia",        "type": "stt"},
+    "minimax":      {"display_name": "MiniMax",       "type": "tts"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
