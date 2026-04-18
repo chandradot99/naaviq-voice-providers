@@ -16,7 +16,7 @@
 | Hume AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS models; TTS-only, 160 voices) |
 | Inworld AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS/STT models; 135 voices, 13 locales) |
 | Murf AI | `api` | ✅ Shipped (API voices + derived TTS models; TTS-only, 162 voices, 41 langs) |
-| **Speechmatics** | `docs` | 🟡 **Next priority** |
+| Speechmatics | `docs` | ✅ Shipped (AI-parsed STT models; TTS skipped — preview-only) |
 
 ---
 
