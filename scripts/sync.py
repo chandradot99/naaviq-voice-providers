@@ -1,13 +1,16 @@
 """
 Sync voice providers to the local (dev) database.
 
-Usage:
-    uv run python scripts/sync.py                    # sync all providers
-    uv run python scripts/sync.py cartesia           # sync one provider
-    uv run python scripts/sync.py cartesia deepgram  # sync multiple
-    uv run python scripts/sync.py -y                 # sync all, skip confirmation
+Two-step workflow designed for Claude Code:
+  Step 1 — dry-run (default): fetch + show diff, no DB write
+  Step 2 — apply: write diff to DB
 
-Runs the sync scripts, shows a diff, and applies to the dev DB.
+Usage:
+    uv run python scripts/sync.py rime               # dry-run: show diff only
+    uv run python scripts/sync.py rime --apply       # apply diff to dev DB
+    uv run python scripts/sync.py --apply            # apply all providers
+    uv run python scripts/sync.py cartesia deepgram  # dry-run multiple
+
 To promote dev → prod: uv run python scripts/promote.py
 """
 
@@ -164,7 +167,7 @@ async def _apply_voices(
     return stats
 
 
-async def sync_provider(provider_id: str, session: AsyncSession, yes: bool) -> bool:
+async def sync_provider(provider_id: str, session: AsyncSession, apply: bool) -> bool:
     print(f"\n{'─' * 52}")
     print(f"  {provider_id}")
     print(f"{'─' * 52}")
@@ -193,16 +196,14 @@ async def sync_provider(provider_id: str, session: AsyncSession, yes: bool) -> b
     print(f"  TTS voices : {voice_stats}")
 
     if not any(s.has_changes for s in [stt_stats, tts_stats, voice_stats]):
-        print("  No changes.")
+        print("  No changes — already up to date.")
         await session.rollback()
         return True
 
-    if not yes:
-        answer = input("  Apply to dev DB? [y/N] ").strip().lower()
-        if answer != "y":
-            print("  Skipped.")
-            await session.rollback()
-            return True
+    if not apply:
+        print("  Dry-run — no changes written. Run with --apply to write to dev DB.")
+        await session.rollback()
+        return True
 
     result2 = await session.execute(select(Provider).where(Provider.provider_id == provider_id))
     provider = result2.scalar_one_or_none()
@@ -211,14 +212,14 @@ async def sync_provider(provider_id: str, session: AsyncSession, yes: bool) -> b
         provider.last_synced_at = now
 
     await session.commit()
-    print("  ✓ Applied.")
+    print("  ✓ Applied to dev DB.")
     return True
 
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description="Sync voice providers to dev DB")
     parser.add_argument("providers", nargs="*", help="Provider IDs (default: all)")
-    parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompts")
+    parser.add_argument("--apply", action="store_true", help="Write changes to dev DB (default: dry-run only)")
     args = parser.parse_args()
 
     if args.providers:
@@ -230,7 +231,9 @@ async def main() -> None:
 
     provider_ids = args.providers or list(_SYNCERS.keys())
 
+    mode = "APPLY" if args.apply else "DRY-RUN"
     print(f"Dev DB : {settings.database_url}")
+    print(f"Mode   : {mode}")
     print(f"Syncing: {', '.join(provider_ids)}")
 
     engine = create_async_engine(settings.database_url)
@@ -239,14 +242,18 @@ async def main() -> None:
     success = 0
     for provider_id in provider_ids:
         async with Session() as session:
-            if await sync_provider(provider_id, session, yes=args.yes):
+            if await sync_provider(provider_id, session, apply=args.apply):
                 success += 1
 
     print(f"\n{'═' * 52}")
-    print(f"  {success}/{len(provider_ids)} providers synced to dev DB")
-    if success < len(provider_ids):
-        print(f"  {len(provider_ids) - success} failed — check errors above")
-    print(f"\n  To promote to prod: uv run python scripts/promote.py")
+    if args.apply:
+        print(f"  {success}/{len(provider_ids)} providers synced to dev DB")
+        if success < len(provider_ids):
+            print(f"  {len(provider_ids) - success} failed — check errors above")
+        print(f"\n  To promote to prod: uv run python scripts/promote.py")
+    else:
+        print(f"  Dry-run complete — no changes written.")
+        print(f"  Review the diff above, then run with --apply to write to dev DB.")
 
     await engine.dispose()
 

@@ -5,11 +5,14 @@ Copies all providers, models, and voices from the dev database to prod.
 Dev DB is the reviewed source of truth — prod mirrors it exactly.
 No AI parsing — pure data copy, zero token cost.
 
+Two-step workflow designed for Claude Code:
+  Step 1 — dry-run (default): show what would change in prod, no write
+  Step 2 — apply: write to prod DB
+
 Usage:
-    uv run python scripts/promote.py                  # promote all providers
-    uv run python scripts/promote.py cartesia         # promote one provider
-    uv run python scripts/promote.py cartesia rime    # promote multiple
-    uv run python scripts/promote.py -y               # skip confirmation
+    uv run python scripts/promote.py                  # dry-run: show diff only
+    uv run python scripts/promote.py --apply          # promote all to prod
+    uv run python scripts/promote.py cartesia --apply # promote one provider
 
 Requirements:
     PROD_DATABASE_URL must be set in .env
@@ -165,7 +168,7 @@ async def promote_provider(
     provider_id: str,
     dev_session: AsyncSession,
     prod_session: AsyncSession,
-    yes: bool,
+    apply: bool,
 ) -> bool:
     print(f"\n{'─' * 52}")
     print(f"  {provider_id}")
@@ -184,12 +187,10 @@ async def promote_provider(
         await prod_session.rollback()
         return True
 
-    if not yes:
-        answer = input("  Promote to prod DB? [y/N] ").strip().lower()
-        if answer != "y":
-            print("  Skipped.")
-            await prod_session.rollback()
-            return True
+    if not apply:
+        print("  Dry-run — no changes written. Run with --apply to promote to prod.")
+        await prod_session.rollback()
+        return True
 
     await _promote_provider(provider_id, dev_session, prod_session)
     await prod_session.commit()
@@ -200,7 +201,7 @@ async def promote_provider(
 async def main() -> None:
     parser = argparse.ArgumentParser(description="Promote dev DB → prod DB")
     parser.add_argument("providers", nargs="*", help="Provider IDs (default: all)")
-    parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompts")
+    parser.add_argument("--apply", action="store_true", help="Write to prod DB (default: dry-run only)")
     args = parser.parse_args()
 
     if not settings.prod_database_url:
@@ -234,11 +235,15 @@ async def main() -> None:
     success = 0
     for provider_id in provider_ids:
         async with DevSession() as dev_session, ProdSession() as prod_session:
-            if await promote_provider(provider_id, dev_session, prod_session, yes=args.yes):
+            if await promote_provider(provider_id, dev_session, prod_session, apply=args.apply):
                 success += 1
 
     print(f"\n{'═' * 52}")
-    print(f"  {success}/{len(provider_ids)} providers promoted to prod")
+    if args.apply:
+        print(f"  {success}/{len(provider_ids)} providers promoted to prod")
+    else:
+        print(f"  Dry-run complete — no changes written.")
+        print(f"  Review the diff above, then run with --apply to promote to prod.")
 
     await dev_engine.dispose()
     await prod_engine.dispose()
