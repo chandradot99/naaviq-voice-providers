@@ -15,6 +15,8 @@
 | PlayHT | `mixed` | ⏭ Skipped (no API access on free plan) |
 | Hume AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS models; TTS-only, 160 voices) |
 | Inworld AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS/STT models; 135 voices, 13 locales) |
+| Murf AI | `api` | ✅ Shipped (API voices + derived TTS models; TTS-only, 162 voices, 41 langs) |
+| **Speechmatics** | `docs` | 🟡 **Next priority** |
 
 ---
 
@@ -153,4 +155,170 @@ HUME_API_KEY=... ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.humeai
 Smoke-test:
 ```bash
 INWORLD_API_KEY=... ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.inworld
+```
+
+---
+
+## Next priority: Murf AI (`api`)
+
+TTS-only provider. Voices and models both derivable from the REST API — no AI parsing needed.
+
+### Source: `api`
+
+- **TTS voices**: `GET https://api.murf.ai/v1/speech/voices` — returns all voices with metadata
+- **TTS models**: 2 known models, derived synthetically (no `/models` endpoint, but models are well-defined constants `FALCON` and `GEN2`)
+- **STT**: not offered — `stt_models=[]`
+
+### Auth
+
+Custom header:
+```
+api-key: <api_key>
+```
+Config: `MURF_API_KEY`.
+
+### What the voices API returns
+
+```json
+{
+  "voiceId": "en-US-natasha",
+  "displayName": "Natasha",
+  "gender": "Female",
+  "locale": "en-US",
+  "description": "...",
+  "supportedLocales": { ... }
+}
+```
+
+- `gender`: `"Male"`, `"Female"`, or `"NonBinary"`
+- `locale`: primary BCP-47 locale
+- `supportedLocales`: map of additional locales with styles
+- Deprecated fields: `accent`, `availableStyles`, `displayLanguage` (use `supportedLocales` instead)
+
+150+ voices across 35+ languages.
+
+### TTS models (derived — no API endpoint)
+
+2 current models:
+
+| model_id | display_name | is_default | streaming | notes |
+|---|---|---|---|---|
+| `falcon` | Murf Falcon | ✅ | ✅ | Ultra-fast; 55ms model latency, <130ms TTFA; real-time voice agents |
+| `gen2` | Murf Gen2 | ❌ | ✅ | High-quality; supports duration, language, style params |
+
+`falcon` → `is_default=True` (recommended for real-time). Both `streaming=True`.
+
+Languages derived from the union of all voice `locale` + `supportedLocales` keys.
+
+### Syncer shape
+
+```python
+class MurfAISyncer(ProviderSyncer):
+    provider_id = "murf"
+    source = "api"
+
+    async def sync(self) -> SyncResult:
+        voices_data = await self._fetch_voices()
+        tts_voices = self._parse_voices(voices_data)
+        tts_models = self._derive_tts_models(voices_data)
+        return SyncResult(
+            stt_models=[],
+            tts_models=tts_models,
+            tts_voices=tts_voices,
+            source=self.source,
+        )
+```
+
+### Voice mapping
+
+- `voice_id` = `voiceId`
+- `display_name` = `displayName`
+- `gender` = `gender` lowercased (`"Female"` → `"female"`, `"NonBinary"` → `"neutral"`)
+- `languages` = `[locale]` + keys from `supportedLocales` (normalized BCP-47)
+- `accent` = derived from locale region (e.g., `en-US` → `"american"`, `en-GB` → `"british"`)
+- `compatible_models = []` — all voices work with both Falcon and Gen2
+- `meta` = `description`, `supportedLocales` (with styles per locale)
+
+### Changes needed
+
+#### `naaviq-voice-providers`
+- `naaviq/sync/murf.py` — new file
+- `naaviq/config.py` — `murf_api_key: str = ""`
+- `.env.example` — `MURF_API_KEY=`
+
+#### `naaviq-admin`
+- `naaviq_admin/routers/providers.py` — register `"murf": "naaviq.sync.murf.MurfAISyncer"`
+
+### Smoke-test command
+
+```bash
+MURF_API_KEY=... uv run python -m naaviq.sync.murf
+```
+
+---
+
+## Next priority: Speechmatics (`docs`)
+
+STT-primary provider with a TTS preview. No REST endpoint exposes models or voices — all AI-parsed from docs.
+
+### Source: `docs`
+
+- **STT models**: AI-parsed from docs — `enhanced` (max accuracy), `default` (faster), `medical` (domain-specific)
+- **TTS**: skipped — preview only, English-only, no stable voice list endpoint. Add when TTS goes GA.
+- `tts_models=[]`, `tts_voices=[]`
+
+### Auth
+
+Bearer token:
+```
+Authorization: Bearer <api_key>
+```
+Config: `SPEECHMATICS_API_KEY`.
+
+### TTS voices (AI-parsed from docs)
+
+~4 English voices currently in preview:
+
+| voice_id | notes |
+|---|---|
+| `sarah` | Female, US English |
+| `bridget` | Female, UK English |
+| + others | More coming |
+
+TTS is English-only (US + UK) for now. More languages in active development.
+
+Docs seed URL: `https://docs.speechmatics.com/text-to-speech/quickstart`
+
+### TTS model (synthetic — no API endpoint)
+
+1 model:
+
+| model_id | display_name | is_default | streaming | languages |
+|---|---|---|---|---|
+| `speechmatics-tts` | Speechmatics TTS | ✅ | ✅ | en-US, en-GB |
+
+### STT models (AI-parsed from docs)
+
+| model_id | display_name | is_default | languages | notes |
+|---|---|---|---|---|
+| `enhanced` | Enhanced | ✅ | * (55+) | Max accuracy |
+| `default` | Default | ❌ | * (55+) | Faster, slightly lower accuracy |
+| `medical` | Medical | ❌ | en | Domain-specific medical vocabulary |
+
+Docs seed URL: `https://docs.speechmatics.com/`
+
+### Changes needed
+
+#### `naaviq-voice-providers`
+- `naaviq/sync/speechmatics.py` — new file
+- `naaviq/config.py` — `speechmatics_api_key: str = ""`
+- `.env.example` — `SPEECHMATICS_API_KEY=`
+
+#### `naaviq-admin`
+- `naaviq_admin/routers/providers.py` — register `"speechmatics": "naaviq.sync.speechmatics.SpeechmaticsSyncer"`
+
+### Smoke-test command
+
+```bash
+SPEECHMATICS_API_KEY=... ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.speechmatics
 ```

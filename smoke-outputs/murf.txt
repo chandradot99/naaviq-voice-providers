@@ -1,0 +1,30 @@
+
+=== TTS Models (2) ===
+  'falcon'        'Murf Falcon'        langs=41 is_default=True
+  'gen2'          'Murf Gen2'          langs=41 is_default=False
+
+=== TTS Voices (162) — showing first 20 ===
+  'en-US-alina'             'Alina (F)'          gender=female accent=american     langs=['en-US']
+  'en-UK-hazel'             'Hazel (F)'          gender=female accent=british      langs=['bg-BG', 'bn-IN', 'cs-CZ', 'de-DE', 'el-GR', 'en-AU', 'en-IN', 'en-Scott', 'en-UK', 'en-US', 'es-ES', 'es-MX', 'fi-FI', 'fr-CA', 'fr-FR', 'gu-IN', 'hi-IN', 'hr-HR', 'id-ID', 'it-IT', 'ja-JP', 'kn-IN', 'ko-KR', 'ml-IN', 'mr-IN', 'ms-MY', 'nl-BE', 'nl-NL', 'pa-IN', 'pl-PL', 'pt-BR', 'ro-RO', 'sk-SK', 'sv-SE', 'ta-IN', 'te-IN', 'th-TH', 'tl-PH', 'tr-TR', 'vi-VN', 'zh-CN']
+  'en-US-cooper'            'Cooper (M)'         gender=male   accent=american     langs=['en-US']
+  'en-US-imani'             'Imani (F)'          gender=female accent=american     langs=['en-US']
+  'it-IT-giorgio'           'Giorgio (M)'        gender=male   accent=?            langs=['en-US', 'it-IT']
+  'bn-IN-arnab'             'Arnab (M)'          gender=male   accent=indian       langs=['bn-IN', 'en-IN']
+  'en-US-wayne'             'Wayne (M)'          gender=male   accent=american     langs=['bg-BG', 'bn-IN', 'cs-CZ', 'de-DE', 'el-GR', 'en-AU', 'en-IN', 'en-Scott', 'en-UK', 'en-US', 'es-ES', 'es-MX', 'fi-FI', 'fr-CA', 'fr-FR', 'gu-IN', 'hi-IN', 'hr-HR', 'id-ID', 'it-IT', 'ja-JP', 'kn-IN', 'ko-KR', 'ml-IN', 'mr-IN', 'ms-MY', 'nl-BE', 'nl-NL', 'pa-IN', 'pl-PL', 'pt-BR', 'ro-RO', 'sk-SK', 'sv-SE', 'ta-IN', 'te-IN', 'th-TH', 'tl-PH', 'tr-TR', 'vi-VN', 'zh-CN']
+  'en-US-daniel'            'Daniel (M)'         gender=male   accent=american     langs=['en-US']
+  'hr-HR-marija'            'Marija (F)'         gender=female accent=?            langs=['bg-BG', 'bn-IN', 'cs-CZ', 'de-DE', 'el-GR', 'en-AU', 'en-IN', 'en-Scott', 'en-UK', 'en-US', 'es-ES', 'es-MX', 'fi-FI', 'fr-CA', 'fr-FR', 'gu-IN', 'hi-IN', 'hr-HR', 'id-ID', 'it-IT', 'ja-JP', 'kn-IN', 'ko-KR', 'ml-IN', 'mr-IN', 'ms-MY', 'nl-BE', 'nl-NL', 'pa-IN', 'pl-PL', 'pt-BR', 'ro-RO', 'sk-SK', 'sv-SE', 'ta-IN', 'te-IN', 'th-TH', 'tl-PH', 'tr-TR', 'vi-VN', 'zh-CN']
+  'bn-IN-anwesha'           'Anwesha (F)'        gender=female accent=indian       langs=['bg-BG', 'bn-IN', 'cs-CZ', 'de-DE', 'el-GR', 'en-AU', 'en-IN', 'en-Scott', 'en-UK', 'en-US', 'es-ES', 'es-MX', 'fi-FI', 'fr-CA', 'fr-FR', 'gu-IN', 'hi-IN', 'hr-HR', 'id-ID', 'it-IT', 'ja-JP', 'kn-IN', 'ko-KR', 'ml-IN', 'mr-IN', 'ms-MY', 'nl-BE', 'nl-NL', 'pa-IN', 'pl-PL', 'pt-BR', 'ro-RO', 'sk-SK', 'sv-SE', 'ta-IN', 'te-IN', 'th-TH', 'tl-PH', 'tr-TR', 'vi-VN', 'zh-CN']
+  'es-MX-alejandro'         'Alejandro (M)'      gender=male   accent=?            langs=['es-MX']
+  'en-AU-joyce'             'Joyce (F)'          gender=female accent=australian   langs=['en-AU']
+  'en-US-zion'              'Zion (M)'           gender=male   accent=american     langs=['bg-BG', 'cs-CZ', 'en-US', 'fi-FI', 'hr-HR', 'id-ID', 'it-IT', 'ms-MY', 'ro-RO', 'sk-SK', 'sv-SE', 'th-TH', 'tr-TR', 'vi-VN']
+  'en-IN-isha'              'Isha (F)'           gender=female accent=indian       langs=['en-IN']
+  'en-US-riley'             'Riley (F)'          gender=female accent=american     langs=['bg-BG', 'en-US', 'ro-RO']
+  'ko-KR-hwan'              'Hwan (M)'           gender=male   accent=?            langs=['ko-KR']
+  'fr-FR-adélie'            'Adélie (F)'         gender=female accent=?            langs=['bg-BG', 'bn-IN', 'cs-CZ', 'de-DE', 'el-GR', 'en-AU', 'en-IN', 'en-Scott', 'en-UK', 'en-US', 'es-ES', 'es-MX', 'fi-FI', 'fr-CA', 'fr-FR', 'gu-IN', 'hi-IN', 'hr-HR', 'id-ID', 'it-IT', 'ja-JP', 'kn-IN', 'ko-KR', 'ml-IN', 'mr-IN', 'ms-MY', 'nl-BE', 'nl-NL', 'pa-IN', 'pl-PL', 'pt-BR', 'ro-RO', 'sk-SK', 'sv-SE', 'ta-IN', 'te-IN', 'th-TH', 'tl-PH', 'tr-TR', 'vi-VN', 'zh-CN']
+  'en-US-carter'            'Carter (M)'         gender=male   accent=american     langs=['bg-BG', 'bn-IN', 'cs-CZ', 'de-DE', 'el-GR', 'en-AU', 'en-IN', 'en-Scott', 'en-UK', 'en-US', 'es-ES', 'es-MX', 'fi-FI', 'fr-CA', 'fr-FR', 'gu-IN', 'hi-IN', 'hr-HR', 'id-ID', 'it-IT', 'ja-JP', 'kn-IN', 'ko-KR', 'ml-IN', 'mr-IN', 'ms-MY', 'nl-BE', 'nl-NL', 'pa-IN', 'pl-PL', 'pt-BR', 'ro-RO', 'sk-SK', 'sv-SE', 'ta-IN', 'te-IN', 'th-TH', 'tl-PH', 'tr-TR', 'vi-VN', 'zh-CN']
+  'ta-IN-sarvesh'           'Sarvesh (M)'        gender=male   accent=indian       langs=['ta-IN']
+  'en-UK-gabriel'           'Gabriel (M)'        gender=male   accent=british      langs=['en-UK', 'en-US', 'es-MX', 'fr-FR']
+  ... and 142 more
+
+Source: api
+Fetched at: 2026-04-18 08:26:44.660270+00:00

@@ -1,0 +1,10 @@
+
+=== STT Models (3) ===
+  'enhanced'      'Enhanced'           langs=['*'] is_default=True
+  'default'       'Standard'           langs=['*'] is_default=False
+  'medical'       'Medical'            langs=['en'] is_default=False
+
+Source: docs
+Fetched at: 2026-04-18 08:45:03.307520+00:00
+
+Notes: {'urls_fetched': ['https://docs.speechmatics.com/', 'https://docs.speechmatics.com/speech-to-text', 'https://docs.speechmatics.com/speech-to-text/accuracy-benchmarking', 'https://docs.speechmatics.com/speech-to-text/languages'], 'model': 'claude-haiku-4-5-20251001', 'input_tokens': 54596, 'output_tokens': 1839}

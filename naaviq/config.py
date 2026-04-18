@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     hume_api_key: str = ""
     inworld_api_key: str = ""
+    murf_api_key: str = ""
+    speechmatics_api_key: str = ""
 
     # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
     anthropic_api_key: str = ""
