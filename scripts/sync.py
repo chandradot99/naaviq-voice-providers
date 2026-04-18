@@ -180,7 +180,13 @@ async def sync_provider(provider_id: str, session: AsyncSession, apply: bool) ->
     try:
         result: SyncResult = await syncer.sync()
     except Exception as e:
-        print(f"\n  ✗ {e}")
+        msg = str(e)
+        if "no cache found" in msg or "ANTHROPIC_API_KEY not set" in msg:
+            print(f"\n  ⚠  Needs AI extraction — {msg.splitlines()[0]}")
+            for line in msg.splitlines()[1:]:
+                print(f"     {line.strip()}")
+        else:
+            print(f"\n  ✗ {e}")
         return False
     print(" done")
 

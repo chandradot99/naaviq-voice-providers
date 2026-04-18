@@ -209,16 +209,34 @@ async def parse_models_from_docs(
     api_key: str | None = None,
 ) -> tuple[list[SyncModel], dict]:
     """
-    Run an agentic Claude loop to extract models from documentation.
+    Extract models from documentation — cache-first, then Anthropic API.
 
-    `seed_urls` is one or more pages Claude should fetch up front. Claude can
-    follow additional links from those pages via the fetch_url tool if needed.
+    Claude Code path (no ANTHROPIC_API_KEY):
+      Checks .sync-cache/{provider_id}_{model_type}_models.json first.
+      If found, returns cached models without any API call.
+      If not found, raises AIParserError with instructions for Claude Code.
 
-    Returns (models, notes) where notes contains provenance for SyncResult.notes:
-      {urls_fetched: list[str], model: str, input_tokens: int, output_tokens: int}
+    Admin UI path (ANTHROPIC_API_KEY set):
+      Runs the agentic Claude loop directly — cache is ignored.
+
+    Returns (models, notes) where notes contains provenance for SyncResult.notes.
     """
     if not seed_urls:
         raise AIParserError("seed_urls must contain at least one URL")
+
+    # Claude Code path: check cache before hitting the API
+    if not (api_key or os.getenv("ANTHROPIC_API_KEY")):
+        from naaviq.sync.cache import read_models_cache, _models_path
+        cached = read_models_cache(provider_id, model_type)
+        if cached is not None:
+            return cached, {"source": "cache", "path": str(_models_path(provider_id, model_type))}
+        raise AIParserError(
+            f"ANTHROPIC_API_KEY not set and no cache found for {provider_id} {model_type} models.\n"
+            f"  Cache path: .sync-cache/{provider_id}_{model_type}_models.json\n"
+            f"  Docs URLs : {seed_urls}\n"
+            f"  To fix    : Ask Claude Code to extract {model_type} models for {provider_id} "
+            f"from the docs URLs above and write them to the cache path."
+        )
 
     client = _make_client(api_key)
 
@@ -270,15 +288,32 @@ async def parse_voices_from_docs(
     api_key: str | None = None,
 ) -> tuple[list[SyncVoice], dict]:
     """
-    Run an agentic Claude loop to extract TTS voices from documentation.
+    Extract voices from documentation — cache-first, then Anthropic API.
 
-    `seed_urls` is one or more pages Claude should fetch up front.
+    Claude Code path (no ANTHROPIC_API_KEY):
+      Checks .sync-cache/{provider_id}_voices.json first.
+      If found, returns cached voices without any API call.
+      If not found, raises AIParserError with instructions for Claude Code.
 
-    Returns (voices, notes) where notes contains provenance for SyncResult.notes:
-      {urls_fetched: list[str], model: str, input_tokens: int, output_tokens: int}
+    Admin UI path (ANTHROPIC_API_KEY set):
+      Runs the agentic Claude loop directly — cache is ignored.
     """
     if not seed_urls:
         raise AIParserError("seed_urls must contain at least one URL")
+
+    # Claude Code path: check cache before hitting the API
+    if not (api_key or os.getenv("ANTHROPIC_API_KEY")):
+        from naaviq.sync.cache import read_voices_cache, _voices_path
+        cached = read_voices_cache(provider_id)
+        if cached is not None:
+            return cached, {"source": "cache", "path": str(_voices_path(provider_id))}
+        raise AIParserError(
+            f"ANTHROPIC_API_KEY not set and no cache found for {provider_id} voices.\n"
+            f"  Cache path: .sync-cache/{provider_id}_voices.json\n"
+            f"  Docs URLs : {seed_urls}\n"
+            f"  To fix    : Ask Claude Code to extract voices for {provider_id} "
+            f"from the docs URLs above and write them to the cache path."
+        )
 
     client = _make_client(api_key)
 
@@ -454,7 +489,11 @@ async def _run_agentic_loop(
 def _make_client(api_key: str | None) -> AsyncAnthropic:
     key = api_key or os.getenv("ANTHROPIC_API_KEY")
     if not key:
-        raise AIParserError("ANTHROPIC_API_KEY not set")
+        raise AIParserError(
+            "ANTHROPIC_API_KEY not set.\n"
+            "  Admin UI path : set ANTHROPIC_API_KEY in .env\n"
+            "  Claude Code   : extract models/voices manually and write to .sync-cache/"
+        )
     return AsyncAnthropic(api_key=key)
 
 
