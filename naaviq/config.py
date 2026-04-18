@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     murf_api_key: str = ""
     speechmatics_api_key: str = ""
     lmnt_api_key: str = ""
+    assemblyai_api_key: str = ""
 
     # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
     anthropic_api_key: str = ""
