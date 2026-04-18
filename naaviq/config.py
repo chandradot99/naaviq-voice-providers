@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     revai_api_key: str = ""
     gladia_api_key: str = ""
     minimax_api_key: str = ""
+    ibm_tts_api_key: str = ""
+    ibm_stt_api_key: str = ""
+    ibm_tts_url: str = "https://api.us-south.text-to-speech.watson.cloud.ibm.com"
+    ibm_stt_url: str = "https://api.us-south.speech-to-text.watson.cloud.ibm.com"
 
     # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
     anthropic_api_key: str = ""
