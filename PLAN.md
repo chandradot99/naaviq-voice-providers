@@ -17,6 +17,9 @@
 | Inworld AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS/STT models; 135 voices, 13 locales) |
 | Murf AI | `api` | ✅ Shipped (API voices + derived TTS models; TTS-only, 162 voices, 41 langs) |
 | Speechmatics | `docs` | ✅ Shipped (AI-parsed STT models; TTS skipped — preview-only) |
+| LMNT | `mixed` | ✅ Shipped (API voices + derived TTS models; TTS-only, 44 voices, 21 langs) |
+| Rime AI | `api` | ✅ Shipped (API voices + derived TTS models; TTS-only, 404 unique voices, 4 models) |
+| AssemblyAI | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 6 models) |
 
 ---
 

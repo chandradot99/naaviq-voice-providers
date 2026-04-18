@@ -2,7 +2,7 @@
 
 Open-source voice provider registry — STT/TTS models and voices.
 
-A public read-only REST API at `providers.naaviq.ai` that serves up-to-date metadata about voice AI providers (Cartesia, ElevenLabs, Deepgram, OpenAI, Sarvam, Azure, Amazon Polly, Hume AI, Inworld AI, …) so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
+A public read-only REST API at `providers.naaviq.ai` that serves up-to-date metadata about voice AI providers (Deepgram, Cartesia, ElevenLabs, OpenAI, Google Cloud, Sarvam, Azure, Amazon Polly, Hume AI, Inworld AI, Murf AI, Speechmatics, LMNT, Rime AI, AssemblyAI, …) so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
 
 ## What's in here
 
@@ -17,9 +17,9 @@ Each provider has a syncer that returns a `SyncResult(stt_models, tts_models, tt
 
 | Source | When | Examples |
 |---|---|---|
-| `api` | Provider exposes a REST models endpoint | Deepgram, Azure, Amazon Polly |
-| `docs` | No API — parse docs with an AI model | OpenAI, Sarvam |
-| `mixed` | Some endpoints exist, some require parsing docs | Cartesia, ElevenLabs, Hume AI, Inworld AI |
+| `api` | Provider exposes a REST models/voices endpoint | Deepgram, Azure, Amazon Polly, Rime AI |
+| `docs` | No API — parse docs with an AI model | OpenAI, Sarvam, Speechmatics, AssemblyAI |
+| `mixed` | Some endpoints exist, some require parsing docs | Cartesia, ElevenLabs, Hume AI, Inworld AI, LMNT |
 
 For `docs` and `mixed` sources, `naaviq/sync/ai_parser.py` runs an agentic Claude loop with two tools (`fetch_url`, `return_models`) and a JSONSchema-constrained terminal call to extract structured `SyncModel` objects.
 

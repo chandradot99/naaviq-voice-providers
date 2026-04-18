@@ -66,7 +66,12 @@ naaviq-voice-providers/
 │       ├── azure.py      — Azure Speech syncer (api: API voices + derived TTS models + synthetic STT)
 │       ├── amazon_polly.py — Amazon Polly syncer (api: API voices + derived TTS models; TTS-only)
 │       ├── humeai.py     — Hume AI syncer (mixed: API voices + AI-parsed TTS models; TTS-only)
-│       └── inworld.py    — Inworld AI syncer (mixed: API voices + AI-parsed TTS/STT models)
+│       ├── inworld.py    — Inworld AI syncer (mixed: API voices + AI-parsed TTS/STT models)
+│       ├── murf.py       — Murf AI syncer (api: API voices + derived TTS models; TTS-only)
+│       ├── speechmatics.py — Speechmatics syncer (docs: AI-parsed STT models; STT-only)
+│       ├── lmnt.py       — LMNT syncer (mixed: API voices + derived TTS models; TTS-only)
+│       ├── rime.py       — Rime AI syncer (api: API voices + derived TTS models; TTS-only)
+│       └── assemblyai.py — AssemblyAI syncer (docs: AI-parsed STT models; STT-only)
 ├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 indexes)
 ├── tests/
 ├── docker-compose.yml    — Postgres only (for local dev)
@@ -127,6 +132,8 @@ Every provider uses a different language format. All languages are normalized to
 | Sarvam | `"hi-IN"`, `"en-IN"` | already correct |
 | Hume AI | `"English"`, `"Japanese"` | `"en"`, `"ja"` (mapped via `_LANGUAGE_NAME_TO_BCP47`) |
 | Inworld AI | `"EN_US"`, `"zh_CN"` | `"en-US"`, `"zh-CN"` (underscore → hyphen) |
+| Rime AI | `"eng"`, `"ger"`, `"por"` | `"en"`, `"de"`, `"pt"` (ISO 639-2 → BCP-47 via `_ISO3_TO_BCP47`) |
+| LMNT | `"ar"`, `"zh"` | `"ar"`, `"zh"` (already ISO 639-1, pass through `normalize_languages`) |
 
 `"*"` is the wildcard for "supports many languages, no enumerated list" (e.g., ElevenLabs Scribe's ~99 languages). Always call `normalize_languages(langs)` before returning from any fetch method.
 
