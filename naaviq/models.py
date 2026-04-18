@@ -22,6 +22,8 @@ class Provider(Base):
     website: Mapped[str | None] = mapped_column(String(256))
     description: Mapped[str | None] = mapped_column(Text)
     source: Mapped[str | None] = mapped_column(String(8))               # "api" | "docs" | "mixed"
+    api_urls: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    docs_urls: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
     last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     deprecated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

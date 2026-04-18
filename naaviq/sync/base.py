@@ -91,6 +91,8 @@ class SyncResult:
     tts_models: list[SyncModel]
     tts_voices: list[SyncVoice]
     source: Literal["api", "docs", "mixed"]
+    api_urls: list[str] = field(default_factory=list)   # REST endpoints called during sync
+    docs_urls: list[str] = field(default_factory=list)  # documentation pages parsed during sync
     fetched_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     notes: str | None = None
 

@@ -47,6 +47,7 @@ class SpeechmaticsSyncer(ProviderSyncer):
             tts_models=[],
             tts_voices=[],
             source=self.source,
+            docs_urls=_STT_SEED_URLS,
             notes=notes,
         )
 

@@ -114,6 +114,8 @@ class HumeAISyncer(ProviderSyncer):
             tts_models=tts_models,
             tts_voices=self._parse_voices(voices_data),
             source=self.source,
+            api_urls=[_VOICES_URL],
+            docs_urls=_DOCS_SEED_URLS,
             notes=notes,
         )
 

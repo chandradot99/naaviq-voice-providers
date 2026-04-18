@@ -124,20 +124,29 @@ class SarvamSyncer(ProviderSyncer):
             )
         )
 
-        total_in  = stt_notes["input_tokens"]  + tts_notes["input_tokens"]  + voice_notes["input_tokens"]
-        total_out = stt_notes["output_tokens"] + tts_notes["output_tokens"] + voice_notes["output_tokens"]
-        notes = (
-            f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} page(s). "
-            f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} page(s). "
-            f"TTS voices: {len(tts_voices)} from {len(voice_notes['urls_fetched'])} page(s). "
-            f"AI: {total_in} in / {total_out} out tokens ({stt_notes['model']})."
-        )
+        from_cache = any(n.get("source") == "cache" for n in [stt_notes, tts_notes, voice_notes])
+        if from_cache:
+            notes = (
+                f"STT models: {len(stt_models)} (cache). "
+                f"TTS models: {len(tts_models)} (cache). "
+                f"TTS voices: {len(tts_voices)} (cache)."
+            )
+        else:
+            total_in  = stt_notes["input_tokens"]  + tts_notes["input_tokens"]  + voice_notes["input_tokens"]
+            total_out = stt_notes["output_tokens"] + tts_notes["output_tokens"] + voice_notes["output_tokens"]
+            notes = (
+                f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} page(s). "
+                f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} page(s). "
+                f"TTS voices: {len(tts_voices)} from {len(voice_notes['urls_fetched'])} page(s). "
+                f"AI: {total_in} in / {total_out} out tokens ({stt_notes['model']})."
+            )
 
         return SyncResult(
             stt_models=stt_models,
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            docs_urls=list(dict.fromkeys(_STT_DOCS + _TTS_DOCS + _VOICES_DOCS)),
             notes=notes,
         )
 

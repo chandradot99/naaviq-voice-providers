@@ -66,6 +66,7 @@ naaviq-voice-providers/
 │       ├── base.py       — SyncResult contract + ProviderSyncer base class
 │       ├── language.py   — BCP-47 normalization + ACCENT_MAP
 │       ├── ai_parser.py  — Agentic Claude loop for parsing models/voices from docs
+│       ├── cache.py      — JSON cache for AI-extracted data (.sync-cache/ dir, gitignored)
 │       ├── deepgram.py   — Deepgram syncer (api)
 │       ├── cartesia.py   — Cartesia syncer (mixed: API voices + AI-parsed models)
 │       ├── elevenlabs.py — ElevenLabs syncer (mixed: API TTS/voices + AI-parsed STT)
@@ -85,7 +86,7 @@ naaviq-voice-providers/
 ├── scripts/
 │   ├── sync.py           — run syncers, diff vs dev DB, apply to dev DB
 │   └── promote.py        — copy dev DB state → prod DB (zero token cost)
-├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 indexes)
+├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 provider source urls)
 ├── tests/
 ├── docker-compose.yml    — Postgres only (for local dev)
 └── CLAUDE.md
@@ -93,7 +94,7 @@ naaviq-voice-providers/
 
 ## Database tables
 
-- **`providers`** — Cartesia, ElevenLabs, OpenAI, Deepgram, Sarvam, etc.
+- **`providers`** — Cartesia, ElevenLabs, OpenAI, Deepgram, Sarvam, etc. Includes `api_urls` and `docs_urls` arrays so consumers can trace where the data came from.
 - **`models`** — STT/TTS models per provider (languages, streaming, is_default)
 - **`voices`** — TTS voices per provider (gender, category, languages, compatible_models, preview_url)
 
@@ -193,10 +194,11 @@ class MyProviderSyncer(ProviderSyncer):
 5. Put provider-specific extras in `meta`
 6. For `api` source: call the provider's REST API directly
 7. For `docs` / `mixed` source: call `parse_models_from_docs(seed_urls=…, guidance=…)` for the parts that aren't in an API
-8. Add an env var to `naaviq/config.py` and `.env.example` if the syncer needs an API key
-9. Register in `naaviq-admin/naaviq_admin/routers/providers.py` `_SYNCERS` dict
-10. Add to `_SYNCERS` and `_PROVIDER_META` in `scripts/sync.py`
-11. Submit a PR
+8. Populate `api_urls` and `docs_urls` in the returned `SyncResult` — these are stored in the DB and exposed via the public API
+9. Add an env var to `naaviq/config.py` and `.env.example` if the syncer needs an API key
+10. Register in `naaviq-admin/naaviq_admin/routers/providers.py` `_SYNCERS` dict
+11. Add to `_SYNCERS` and `_PROVIDER_META` in `scripts/sync.py`
+12. Submit a PR
 
 ### Smoke testing a syncer
 

@@ -107,20 +107,30 @@ class GoogleCloudSyncer(ProviderSyncer):
         tts_voices = self._parse_voices(voices_data)
         tts_models = self._inject_orphan_tiers(tts_models, tts_voices)
 
-        total_in  = tts_notes["input_tokens"]  + stt_notes["input_tokens"]
-        total_out = tts_notes["output_tokens"] + stt_notes["output_tokens"]
-        notes = (
-            f"Voices: {len(tts_voices)} from /v1/voices. "
-            f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} doc page(s). "
-            f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} doc page(s). "
-            f"AI: {total_in} in / {total_out} out tokens ({tts_notes['model']})."
-        )
+        from_cache = any(n.get("source") == "cache" for n in [tts_notes, stt_notes])
+        if from_cache:
+            notes = (
+                f"Voices: {len(tts_voices)} from /v1/voices. "
+                f"TTS models: {len(tts_models)} (cache). "
+                f"STT models: {len(stt_models)} (cache)."
+            )
+        else:
+            total_in  = tts_notes["input_tokens"]  + stt_notes["input_tokens"]
+            total_out = tts_notes["output_tokens"] + stt_notes["output_tokens"]
+            notes = (
+                f"Voices: {len(tts_voices)} from /v1/voices. "
+                f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} doc page(s). "
+                f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} doc page(s). "
+                f"AI: {total_in} in / {total_out} out tokens ({tts_notes['model']})."
+            )
 
         return SyncResult(
             stt_models=stt_models,
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            api_urls=[_VOICES_URL],
+            docs_urls=_TTS_MODELS_DOCS_URLS + _STT_MODELS_DOCS_URLS,
             notes=notes,
         )
 

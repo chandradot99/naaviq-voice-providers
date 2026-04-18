@@ -68,6 +68,7 @@ class AmazonPollySyncer(ProviderSyncer):
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            api_urls=["https://polly.{region}.amazonaws.com/v1/voices"],
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────

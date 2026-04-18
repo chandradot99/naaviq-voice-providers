@@ -85,20 +85,29 @@ class OpenAISyncer(ProviderSyncer):
             )
         )
 
-        total_in  = tts_notes["input_tokens"]  + stt_notes["input_tokens"]  + voice_notes["input_tokens"]
-        total_out = tts_notes["output_tokens"] + stt_notes["output_tokens"] + voice_notes["output_tokens"]
-        notes = (
-            f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} page(s). "
-            f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} page(s). "
-            f"TTS voices: {len(tts_voices)} from {len(voice_notes['urls_fetched'])} page(s). "
-            f"AI: {total_in} in / {total_out} out tokens ({tts_notes['model']})."
-        )
+        from_cache = any(n.get("source") == "cache" for n in [tts_notes, stt_notes, voice_notes])
+        if from_cache:
+            notes = (
+                f"TTS models: {len(tts_models)} (cache). "
+                f"STT models: {len(stt_models)} (cache). "
+                f"TTS voices: {len(tts_voices)} (cache)."
+            )
+        else:
+            total_in  = tts_notes["input_tokens"]  + stt_notes["input_tokens"]  + voice_notes["input_tokens"]
+            total_out = tts_notes["output_tokens"] + stt_notes["output_tokens"] + voice_notes["output_tokens"]
+            notes = (
+                f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} page(s). "
+                f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} page(s). "
+                f"TTS voices: {len(tts_voices)} from {len(voice_notes['urls_fetched'])} page(s). "
+                f"AI: {total_in} in / {total_out} out tokens ({tts_notes['model']})."
+            )
 
         return SyncResult(
             stt_models=stt_models,
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            docs_urls=_MODELS_DOCS + _VOICES_DOCS,
             notes=notes,
         )
 

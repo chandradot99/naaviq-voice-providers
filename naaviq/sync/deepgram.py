@@ -33,6 +33,7 @@ class DeepgramSyncer(ProviderSyncer):
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            api_urls=[_API_URL],
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────

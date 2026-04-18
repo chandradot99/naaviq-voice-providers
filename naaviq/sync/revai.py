@@ -63,6 +63,7 @@ class RevAISyncer(ProviderSyncer):
             tts_models=[],
             tts_voices=[],
             source=self.source,
+            docs_urls=_SEED_URLS,
             notes=notes,
         )
 

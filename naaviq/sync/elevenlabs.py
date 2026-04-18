@@ -84,18 +84,27 @@ class ElevenLabsSyncer(ProviderSyncer):
             if api_m.model_id not in ai_stt_ids:
                 stt_models.append(api_m)
 
-        notes = (
-            f"TTS models: {len(tts_models)} from /v1/models. "
-            f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} doc page(s). "
-            f"Voices: {len(tts_voices)} from /v2/voices. "
-            f"AI: {stt_notes['input_tokens']} in / {stt_notes['output_tokens']} out tokens ({stt_notes['model']})."
-        )
+        if stt_notes.get("source") == "cache":
+            notes = (
+                f"TTS models: {len(tts_models)} from /v1/models. "
+                f"STT models: {len(stt_models)} (cache). "
+                f"Voices: {len(tts_voices)} from /v2/voices."
+            )
+        else:
+            notes = (
+                f"TTS models: {len(tts_models)} from /v1/models. "
+                f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} doc page(s). "
+                f"Voices: {len(tts_voices)} from /v2/voices. "
+                f"AI: {stt_notes['input_tokens']} in / {stt_notes['output_tokens']} out tokens ({stt_notes['model']})."
+            )
 
         return SyncResult(
             stt_models=stt_models,
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            api_urls=[_MODELS_URL, _VOICES_URL],
+            docs_urls=_STT_MODELS_DOCS_URLS,
             notes=notes,
         )
 

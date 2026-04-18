@@ -104,6 +104,8 @@ class InworldAISyncer(ProviderSyncer):
             tts_models=tts_models,
             tts_voices=self._parse_voices(voices_data),
             source=self.source,
+            api_urls=[_VOICES_URL],
+            docs_urls=_TTS_DOCS_SEED_URLS + _STT_DOCS_SEED_URLS,
             notes="; ".join(notes_parts) if notes_parts else None,
         )
 

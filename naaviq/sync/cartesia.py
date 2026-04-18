@@ -105,20 +105,31 @@ class CartesiaSyncer(ProviderSyncer):
             ),
         )
 
-        total_in  = tts_notes["input_tokens"]  + stt_notes["input_tokens"]
-        total_out = tts_notes["output_tokens"] + stt_notes["output_tokens"]
-        notes = (
-            f"Voices: {len(tts_voices)} from {voice_pages} API page(s). "
-            f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} doc page(s). "
-            f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} doc page(s). "
-            f"AI: {total_in} in / {total_out} out tokens ({tts_notes['model']})."
-        )
+        tts_src = tts_notes.get("source", "ai")
+        stt_src = stt_notes.get("source", "ai")
+        if tts_src == "cache" or stt_src == "cache":
+            notes = (
+                f"Voices: {len(tts_voices)} from {voice_pages} API page(s). "
+                f"TTS models: {len(tts_models)} (cache). "
+                f"STT models: {len(stt_models)} (cache)."
+            )
+        else:
+            total_in  = tts_notes["input_tokens"]  + stt_notes["input_tokens"]
+            total_out = tts_notes["output_tokens"] + stt_notes["output_tokens"]
+            notes = (
+                f"Voices: {len(tts_voices)} from {voice_pages} API page(s). "
+                f"TTS models: {len(tts_models)} from {len(tts_notes['urls_fetched'])} doc page(s). "
+                f"STT models: {len(stt_models)} from {len(stt_notes['urls_fetched'])} doc page(s). "
+                f"AI: {total_in} in / {total_out} out tokens ({tts_notes['model']})."
+            )
 
         return SyncResult(
             stt_models=stt_models,
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            api_urls=[_VOICES_URL],
+            docs_urls=_TTS_MODELS_DOCS_URLS + _STT_MODELS_DOCS_URLS,
             notes=notes,
         )
 

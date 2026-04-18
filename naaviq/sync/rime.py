@@ -99,6 +99,7 @@ class RimeSyncer(ProviderSyncer):
             tts_models=self._derive_tts_models(),
             tts_voices=self._parse_voices(voices_data),
             source=self.source,
+            api_urls=[_VOICES_URL],
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────

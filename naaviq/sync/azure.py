@@ -58,6 +58,7 @@ class AzureSyncer(ProviderSyncer):
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
+            api_urls=[_VOICES_URL],
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────

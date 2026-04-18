@@ -216,6 +216,10 @@ async def sync_provider(provider_id: str, session: AsyncSession, apply: bool) ->
     if provider:
         provider.source = result.source
         provider.last_synced_at = now
+        if result.api_urls:
+            provider.api_urls = result.api_urls
+        if result.docs_urls:
+            provider.docs_urls = result.docs_urls
 
     await session.commit()
     print("  ✓ Applied to dev DB.")
