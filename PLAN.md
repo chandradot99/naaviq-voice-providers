@@ -12,7 +12,9 @@
 | Sarvam | `docs` | ✅ Shipped (AI-parsed STT/TTS models + 44 voices; first all-Indian-language provider) |
 | Azure | `api` | ✅ Shipped (API voices + derived TTS models + 2 synthetic STT entries) |
 | Amazon Polly | `api` | ✅ Shipped (API voices + derived TTS models; TTS-only, no STT) |
-| **PlayHT** | `mixed` | 🟡 **Next priority** |
+| PlayHT | `mixed` | ⏭ Skipped (no API access on free plan) |
+| Hume AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS models; TTS-only, 160 voices) |
+| Inworld AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS/STT models; 135 voices, 13 locales) |
 
 ---
 
@@ -113,11 +115,42 @@ The registry must come before the spec. Once all providers are in, the patterns 
 
 ---
 
-## Future providers
+## Hume AI — shipped
 
-### PlayHT (`mixed`)
-- TTS models: likely AI-parsed from docs (Play3.0-mini, PlayDialog, PlayHT2.0, …)
-- Voices: `GET https://api.play.ht/api/v2/voices` (if endpoint still public; otherwise docs-parsed)
-- Verify auth scheme — PlayHT has rotated between user-id+secret and Bearer tokens
+`naaviq/sync/humeai.py` — `mixed` source.
 
-Follows the Cartesia/ElevenLabs `mixed` pattern — no new parser capabilities needed.
+- TTS voices from `GET https://api.hume.ai/v0/tts/voices?provider=HUME_AI` (paginated, page_size=100)
+- TTS models: AI-parsed from `https://dev.hume.ai/docs/text-to-speech-tts/overview`
+- STT: not offered — `stt_models=[]`
+- Auth: `X-Hume-Api-Key` header, `HUME_API_KEY`
+- 160 voices with gender, accent, age, and language tags from API response
+- `compatible_octave_models: ["1", "2"]` mapped to `["octave-1", "octave-2"]`
+- Human-readable language names in tags (e.g., "English") mapped to BCP-47 via `_LANGUAGE_NAME_TO_BCP47`
+- Remaining pages fetched concurrently after learning `total_pages` from page 0
+
+Smoke-test:
+```bash
+HUME_API_KEY=... ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.humeai
+```
+
+---
+
+## Inworld AI — shipped
+
+`naaviq/sync/inworld.py` — `mixed` source.
+
+- TTS voices from `GET https://api.inworld.ai/voices/v1/voices` (paginated via `nextPageToken`)
+- TTS models: AI-parsed from `https://docs.inworld.ai/tts/tts`
+- STT models: AI-parsed from `https://docs.inworld.ai/stt/overview`
+- Note: `GET /llm/v1alpha/models` exists but returns LLM Router models, not TTS/STT
+- Auth: `Authorization: Basic <base64_key>`, `INWORLD_API_KEY`
+- 135 voices across 13 locales (en-US, zh-CN, nl-NL, fr-FR, de-DE, it-IT, ja-JP, ko-KR, pl-PL, pt-BR, es-ES, ru-RU, hi-IN, he-IL, ar-SA)
+- Voice fields: `gender`, `ageGroup`, `langCode` (e.g., `EN_US` → normalized to `en-US`), `tags`, `categories`, `description`
+- Accent derived from tags array (e.g., `["british", "eloquent"]` → `accent="british"`)
+- `compatible_models = []` — all voices work with all TTS models
+- Only `source: "SYSTEM"` voices synced (premade); user-cloned voices skipped
+
+Smoke-test:
+```bash
+INWORLD_API_KEY=... ANTHROPIC_API_KEY=... uv run python -m naaviq.sync.inworld
+```

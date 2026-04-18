@@ -1,0 +1,32 @@
+
+=== TTS Models (2) ===
+  'octave-2'      'Octave 2'           langs=['en', 'ja', 'ko', 'es', 'fr', 'pt', 'it', 'de', 'ru', 'hi', 'ar'] is_default=True
+  'octave-1'      'Octave 1'           langs=['en', 'es'] is_default=False
+
+=== TTS Voices (160) — showing first 20 ===
+  'd8ab67c6-953d-4bd8-9370-8fa53a0f1453'   'Colton Rivers'                gender=male   accent=american     age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  '44cb3a51-07b4-4934-83fd-9d9e8d363ce6'   'Dungeon Master'               gender=male   accent=american     age=young        langs=['en'] models=['octave-1', 'octave-2']
+  'b270ea4b-d169-4d1b-83c4-2e816e947522'   'Female Meditation Guide'      gender=female accent=american     age=young        langs=['en'] models=['octave-1', 'octave-2']
+  '9c2fa3e6-7bbf-4e71-8838-3d28f26cc269'   'Friendly Troll'               gender=male   accent=american     age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  '06646694-ba2a-4bca-ae3c-71d79c6b04a3'   'Geraldine Wallace'            gender=female accent=american     age=old          langs=['en'] models=['octave-1', 'octave-2']
+  '2c0e2c10-ac19-4aac-93d0-29c385d7364e'   'Ghost With Unfinished Business' gender=male   accent=american     age=young        langs=['en'] models=['octave-1', 'octave-2']
+  '96ee3964-5f3f-4a5a-be09-393e833aaf0e'   'Imani Carter'                 gender=female accent=american     age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  'c7aa10be-57c1-4647-9306-7ac48dde3536'   'Lady Elizabeth'               gender=female accent=british      age=old          langs=['en'] models=['octave-1', 'octave-2']
+  '82a76fb8-3524-4e87-9265-9795c8e4ede6'   'Male Protagonist'             gender=male   accent=american     age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  'a6984261-4b9f-492c-a5fd-9ddbe14039c4'   'Medieval Peasant Woman'       gender=female accent=british      age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  '0366be28-522b-432b-b346-119d5f21c3f2'   'Medieval Town Crier'          gender=male   accent=british      age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  '375cd12e-8216-4c6d-8d79-5dfd56fe19f5'   'Mrs. Pembroke'                gender=female accent=british      age=old          langs=['en'] models=['octave-1', 'octave-2']
+  '203d3e34-e50b-48ab-a782-835fa39c36c6'   'Nasal Podcast Host'           gender=male   accent=american     age=young        langs=['en'] models=['octave-1', 'octave-2']
+  '88e0c3f6-6f99-4e37-a3f4-a053869d6bd4'   'Old School Radio Announcer'   gender=male   accent=american     age=old          langs=['en'] models=['octave-1', 'octave-2']
+  '27019e54-59c4-4400-a51c-7e5fd2142029'   'Old-Timey English Priest'     gender=male   accent=british      age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  '2bc0fca6-d591-4855-abef-ec048a385e8f'   'Pirate Captain'               gender=male   accent=british      age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  'aeaaf1f8-fe31-49ae-893d-c744e5207bc2'   'Relaxing ASMR Woman'          gender=female accent=american     age=young        langs=['en'] models=['octave-1', 'octave-2']
+  '55813df9-fdbb-4ec2-a539-1b91fd750ca6'   'Sad Old British Man'          gender=male   accent=british      age=old          langs=['en'] models=['octave-1', 'octave-2']
+  'a48360cb-14f3-460c-93f2-b38deb45400b'   'Scottish Guy'                 gender=male   accent=british      age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  '6a42908a-f332-4c39-a93a-98c7d6017f12'   'Tough Guy'                    gender=male   accent=american     age=middle_aged  langs=['en'] models=['octave-1', 'octave-2']
+  ... and 140 more
+
+Source: mixed
+Fetched at: 2026-04-18 06:39:00.300113+00:00
+
+Notes: {'urls_fetched': ['https://dev.hume.ai/docs/text-to-speech-tts/overview'], 'model': 'claude-haiku-4-5-20251001', 'input_tokens': 4999, 'output_tokens': 495}

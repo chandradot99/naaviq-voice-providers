@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
     aws_region: str = "us-east-1"
+    hume_api_key: str = ""
+    inworld_api_key: str = ""
 
     # AI parser key — used by sync scripts that parse docs (e.g., Cartesia models)
     anthropic_api_key: str = ""

@@ -64,7 +64,9 @@ naaviq-voice-providers/
 │       ├── google_cloud.py — Google Cloud syncer (mixed: API voices + AI-parsed tiers/STT)
 │       ├── sarvam.py     — Sarvam syncer (docs: AI-parsed STT/TTS models + voices)
 │       ├── azure.py      — Azure Speech syncer (api: API voices + derived TTS models + synthetic STT)
-│       └── amazon_polly.py — Amazon Polly syncer (api: API voices + derived TTS models; TTS-only)
+│       ├── amazon_polly.py — Amazon Polly syncer (api: API voices + derived TTS models; TTS-only)
+│       ├── humeai.py     — Hume AI syncer (mixed: API voices + AI-parsed TTS models; TTS-only)
+│       └── inworld.py    — Inworld AI syncer (mixed: API voices + AI-parsed TTS/STT models)
 ├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 indexes)
 ├── tests/
 ├── docker-compose.yml    — Postgres only (for local dev)
@@ -85,9 +87,9 @@ All tables use `deprecated_at` instead of hard deletes. Sync scripts never write
 
 | Type | When to use | Example providers |
 |---|---|---|
-| `api` | Provider exposes a REST API for both models and voices | Deepgram |
+| `api` | Provider exposes a REST API for both models and voices | Deepgram, Azure, Amazon Polly |
 | `docs` | No API — parse documentation with AI | OpenAI, Sarvam |
-| `mixed` | API for some data (e.g., voices) + docs parsing for the rest (e.g., models) | Cartesia, ElevenLabs |
+| `mixed` | API for some data (e.g., voices) + docs parsing for the rest (e.g., models) | Cartesia, ElevenLabs, Hume AI, Inworld AI |
 
 ### The AI parser (`naaviq/sync/ai_parser.py`)
 
@@ -123,6 +125,8 @@ Every provider uses a different language format. All languages are normalized to
 | ElevenLabs | `"en"`, `"hu"` | `"en"`, `"hu"` |
 | Multilingual catch-all | (provider says "supports many") | `"*"` |
 | Sarvam | `"hi-IN"`, `"en-IN"` | already correct |
+| Hume AI | `"English"`, `"Japanese"` | `"en"`, `"ja"` (mapped via `_LANGUAGE_NAME_TO_BCP47`) |
+| Inworld AI | `"EN_US"`, `"zh_CN"` | `"en-US"`, `"zh-CN"` (underscore → hyphen) |
 
 `"*"` is the wildcard for "supports many languages, no enumerated list" (e.g., ElevenLabs Scribe's ~99 languages). Always call `normalize_languages(langs)` before returning from any fetch method.
 
