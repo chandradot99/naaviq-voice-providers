@@ -55,6 +55,7 @@ _SYNCERS: dict[str, str] = {
     "resemble":          "naaviq.sync.resemble.ResembleSyncer",
     "fishaudio":         "naaviq.sync.fishaudio.FishAudioSyncer",
     "unrealspeech":      "naaviq.sync.unrealspeech.UnrealSpeechSyncer",
+    "smallestai":        "naaviq.sync.smallestai.SmallestAISyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -82,6 +83,7 @@ _PROVIDER_META: dict[str, dict] = {
     "resemble":          {"display_name": "Resemble AI",          "type": "tts"},
     "fishaudio":         {"display_name": "Fish Audio",            "type": "both"},
     "unrealspeech":      {"display_name": "Unreal Speech",         "type": "tts"},
+    "smallestai":        {"display_name": "Smallest AI",           "type": "both"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
