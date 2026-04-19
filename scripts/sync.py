@@ -53,6 +53,7 @@ _SYNCERS: dict[str, str] = {
     "neuphonic":         "naaviq.sync.neuphonic.NeurophonicSyncer",
     "amazon-transcribe": "naaviq.sync.amazon_transcribe.AmazonTranscribeSyncer",
     "resemble":          "naaviq.sync.resemble.ResembleSyncer",
+    "fishaudio":         "naaviq.sync.fishaudio.FishAudioSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -78,6 +79,7 @@ _PROVIDER_META: dict[str, dict] = {
     "neuphonic":         {"display_name": "Neuphonic",            "type": "tts"},
     "amazon-transcribe": {"display_name": "Amazon Transcribe",    "type": "stt"},
     "resemble":          {"display_name": "Resemble AI",          "type": "tts"},
+    "fishaudio":         {"display_name": "Fish Audio",            "type": "both"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
