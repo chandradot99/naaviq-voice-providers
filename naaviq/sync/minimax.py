@@ -3,7 +3,7 @@ MiniMax sync script.
 
 Source: mixed
   - TTS voices: POST https://api.minimax.io/v1/get_voice (system voices, API)
-  - TTS models: derived (no /models endpoint — 8 known models from docs)
+  - TTS models: AI-parsed from docs (no /models endpoint)
   - STT: not offered — stt_models=[]
 
 332 system voices across English, Chinese, Japanese, Korean, Spanish, Portuguese,
@@ -24,6 +24,7 @@ import asyncio
 import httpx
 
 from naaviq.config import settings
+from naaviq.sync.ai_parser import parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
@@ -34,25 +35,24 @@ _DOCS_URLS = [
     "https://platform.minimax.io/docs/api-reference/speech-t2a-http.md",
 ]
 
-# 36+ languages supported across all models (from language_boost parameter docs)
-_MODEL_LANGUAGES = normalize_languages([
-    "zh", "en", "ar", "ru", "es", "fr", "pt", "de", "tr", "nl",
-    "uk", "vi", "id", "ja", "it", "ko", "th", "pl", "ro", "el",
-    "cs", "fi", "hi", "bg", "da", "he", "ms", "fa", "sk", "sv",
-    "hr", "fil", "hu", "no", "sl", "ca", "ta", "af",
-])
+_MODEL_GUIDANCE = """
+Extract MiniMax TTS models. There are 8 models ordered newest to oldest.
+speech-2.8-hd is the flagship default.
 
-# Ordered newest → oldest; speech-2.8-hd is the current flagship
-_TTS_MODELS: list[tuple[str, str, bool]] = [
-    ("speech-2.8-hd",    "Speech 2.8 HD",    True),
-    ("speech-2.8-turbo", "Speech 2.8 Turbo", False),
-    ("speech-2.6-hd",    "Speech 2.6 HD",    False),
-    ("speech-2.6-turbo", "Speech 2.6 Turbo", False),
-    ("speech-02-hd",     "Speech 02 HD",     False),
-    ("speech-02-turbo",  "Speech 02 Turbo",  False),
-    ("speech-01-hd",     "Speech 01 HD",     False),
-    ("speech-01-turbo",  "Speech 01 Turbo",  False),
-]
+Models (newest → oldest):
+  speech-2.8-hd    "Speech 2.8 HD"    is_default=True  — 40+ languages, 7 emotions, streaming+async
+  speech-2.8-turbo "Speech 2.8 Turbo" is_default=False — 40+ languages, 7 emotions, streaming+async
+  speech-2.6-hd    "Speech 2.6 HD"    is_default=False — 40+ languages, 7 emotions, streaming+async
+  speech-2.6-turbo "Speech 2.6 Turbo" is_default=False — 40+ languages, 7 emotions, streaming+async
+  speech-02-hd     "Speech 02 HD"     is_default=False — 24 languages, 7 emotions, streaming+async
+  speech-02-turbo  "Speech 02 Turbo"  is_default=False — 24 languages, 7 emotions, streaming+async
+  speech-01-hd     "Speech 01 HD"     is_default=False — 24 languages, 7 emotions, streaming+async
+  speech-01-turbo  "Speech 01 Turbo"  is_default=False — 24 languages, 7 emotions, streaming+async
+
+For speech-2.x models extract the full language list from the docs language_boost parameter.
+For speech-0x models use the smaller language list (zh, en, ar, ru, es, fr, pt, de, tr, nl, uk, vi, id, ja, it, ko, th, pl, ro, el, cs, fi, hi).
+All models have streaming=True.
+"""
 
 # Voice name prefix → BCP-47 language code
 _LANG_PREFIX_MAP: dict[str, str] = {
@@ -96,17 +96,33 @@ class MinimaxSyncer(ProviderSyncer):
         if not settings.minimax_api_key:
             raise ValueError("MINIMAX_API_KEY is not set in .env")
 
-        voices_data = await self._fetch_voices()
+        voices_data, (tts_models, notes) = await asyncio.gather(
+            self._fetch_voices(),
+            parse_models_from_docs(
+                seed_urls=_DOCS_URLS,
+                provider_id=self.provider_id,
+                model_type="tts",
+                guidance=_MODEL_GUIDANCE,
+            ),
+        )
         tts_voices = self._parse_voices(voices_data)
+
+        from_cache = isinstance(notes, dict) and notes.get("source") == "cache"
+        sync_notes = (
+            f"{len(tts_voices)} system voices. {len(tts_models)} TTS models (cache)."
+            if from_cache else
+            f"{len(tts_voices)} system voices. {len(tts_models)} TTS models. "
+            f"Tokens: {notes.get('input_tokens', 0)}↑ {notes.get('output_tokens', 0)}↓"
+        )
 
         return SyncResult(
             stt_models=[],
-            tts_models=self._derive_tts_models(),
+            tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
             api_urls=[_VOICES_URL],
             docs_urls=_DOCS_URLS,
-            notes=f"{len(tts_voices)} system voices from API.",
+            notes=sync_notes,
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────
@@ -121,31 +137,6 @@ class MinimaxSyncer(ProviderSyncer):
             resp.raise_for_status()
             data = resp.json()
             return data.get("system_voice") or []
-
-    def _derive_tts_models(self) -> list[SyncModel]:
-        models = []
-        for model_id, display_name, is_default in _TTS_MODELS:
-            # Older speech-02/01 models support fewer languages; newer support 40+
-            if model_id.startswith("speech-2"):
-                langs = _MODEL_LANGUAGES
-                desc = "40 languages, 7 emotions, streaming + async."
-            else:
-                desc = "24 languages, 7 emotions, streaming + async."
-                langs = normalize_languages([
-                    "zh", "en", "ar", "ru", "es", "fr", "pt", "de", "tr", "nl",
-                    "uk", "vi", "id", "ja", "it", "ko", "th", "pl", "ro", "el",
-                    "cs", "fi", "hi",
-                ])
-            models.append(SyncModel(
-                model_id=model_id,
-                display_name=display_name,
-                type="tts",
-                languages=langs,
-                streaming=True,
-                is_default=is_default,
-                description=desc,
-            ))
-        return models
 
     def _parse_voices(self, voices_data: list[dict]) -> list[SyncVoice]:
         voices = []

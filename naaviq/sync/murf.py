@@ -1,9 +1,9 @@
 """
 Murf AI sync script.
 
-Source: api
-  - TTS voices: GET https://api.murf.ai/v1/speech/voices
-  - TTS models: 2 derived constants (Falcon + Gen2) — no /models endpoint
+Source: mixed
+  - TTS voices: GET https://api.murf.ai/v1/speech/voices (API)
+  - TTS models: AI-parsed from docs (no /models endpoint); languages derived from live voice API
   - STT: not offered — stt_models=[]
 
 Voice API response fields:
@@ -19,13 +19,37 @@ Auth: api-key header, MURF_API_KEY env var.
 
 from __future__ import annotations
 
+import asyncio
+
 import httpx
 
 from naaviq.config import settings
+from naaviq.sync.ai_parser import parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
 from naaviq.sync.language import ACCENT_MAP, normalize_languages
 
 _VOICES_URL = "https://api.murf.ai/v1/speech/voices"
+
+_DOCS_URLS = [
+    "https://murf.ai/api/docs",
+    "https://murf.ai/resources/text-to-speech-models/",
+]
+
+_MODEL_GUIDANCE = """
+Extract Murf AI TTS models. There are 2 models.
+
+1. model_id="falcon", display_name="Murf Falcon", is_default=True, streaming=True
+   - Murf's latest flagship model. 55ms latency, 130ms TTFA.
+   - Extract supported languages from docs (40+ languages).
+   - description="Murf's flagship TTS model. Ultra-low latency (55ms), 40+ languages."
+
+2. model_id="gen2", display_name="Murf Gen2", is_default=False, streaming=True
+   - Previous generation. Supports styles and custom duration.
+   - Extract supported languages from docs.
+   - description="Murf Gen2 TTS. Supports voice styles and custom duration control."
+
+Use exact model_id values as listed above.
+"""
 
 _GENDER_MAP: dict[str, str] = {
     "male":      "male",
@@ -36,18 +60,48 @@ _GENDER_MAP: dict[str, str] = {
 
 class MurfAISyncer(ProviderSyncer):
     provider_id = "murf"
-    source = "api"
+    source = "mixed"
 
     async def sync(self) -> SyncResult:
-        voices_data = await self._fetch_voices()
+        voices_data, (tts_models, notes) = await asyncio.gather(
+            self._fetch_voices(),
+            parse_models_from_docs(
+                seed_urls=_DOCS_URLS,
+                provider_id=self.provider_id,
+                model_type="tts",
+                guidance=_MODEL_GUIDANCE,
+            ),
+        )
         tts_voices = self._parse_voices(voices_data)
-        tts_models = self._derive_tts_models(voices_data)
+
+        # Patch model languages from live voice API data (more accurate than docs)
+        all_langs = sorted({
+            lang
+            for v in voices_data
+            for loc in ([v.get("locale")] + list((v.get("supportedLocales") or {}).keys()))
+            if loc
+            for lang in normalize_languages([loc])
+        })
+        for m in tts_models:
+            m.languages = all_langs
+
+        from_cache = isinstance(notes, dict) and notes.get("source") == "cache"
+        sync_notes = (
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS models (cache). "
+            f"{len(all_langs)} langs from API."
+            if from_cache else
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS models. "
+            f"{len(all_langs)} langs from API."
+        )
+
         return SyncResult(
             stt_models=[],
             tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
             api_urls=[_VOICES_URL],
+            docs_urls=_DOCS_URLS,
+            notes=sync_notes,
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────
@@ -102,37 +156,6 @@ class MurfAISyncer(ProviderSyncer):
             ))
         return voices
 
-    def _derive_tts_models(self, voices_data: list[dict]) -> list[SyncModel]:
-        all_langs: set[str] = set()
-        for v in voices_data:
-            locale = v.get("locale")
-            if locale:
-                all_langs.update(normalize_languages([locale]))
-            for loc in (v.get("supportedLocales") or {}):
-                all_langs.update(normalize_languages([loc]))
-
-        langs = sorted(all_langs)
-
-        return [
-            SyncModel(
-                model_id="falcon",
-                display_name="Murf Falcon",
-                type="tts",
-                languages=langs,
-                streaming=True,
-                is_default=True,
-                meta={"latency_ms": 55, "ttfa_ms": 130},
-            ),
-            SyncModel(
-                model_id="gen2",
-                display_name="Murf Gen2",
-                type="tts",
-                languages=langs,
-                streaming=True,
-                is_default=False,
-                meta={"supports_duration": True, "supports_style": True},
-            ),
-        ]
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

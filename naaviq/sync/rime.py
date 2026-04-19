@@ -1,9 +1,9 @@
 """
 Rime AI sync script.
 
-Source: api
+Source: mixed
   - TTS voices: GET https://users.rime.ai/data/voices/voice_details.json (public, no auth)
-  - TTS models: derived synthetically — no /models endpoint
+  - TTS models: AI-parsed from docs (no /models endpoint)
   - STT: not offered — stt_models=[]
 
 Voice catalog is a static JSON file returning all 600+ voices at once (no pagination).
@@ -36,13 +36,42 @@ Config: RIME_API_KEY (not needed for sync, reserved for future synthesis use).
 from __future__ import annotations
 
 import asyncio
+from collections import defaultdict
 
 import httpx
 
+from naaviq.sync.ai_parser import parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _VOICES_URL = "https://users.rime.ai/data/voices/voice_details.json"
+
+_DOCS_URLS = [
+    "https://docs.rime.ai/api-reference/models",
+    "https://docs.rime.ai/api-reference/voices",
+]
+
+_MODEL_GUIDANCE = """
+Extract Rime AI TTS models. There are 4 models.
+
+1. model_id="arcana", display_name="Rime Arcana", is_default=True, streaming=True
+   - Flagship model. Multilingual (en, es, fr, de, ar, he, hi, ja, pt).
+   - description="Rime's flagship TTS model — ultra-realistic, expressive, multilingual."
+
+2. model_id="mistv3", display_name="Rime Mist v3", is_default=False, streaming=True
+   - Ultra-low latency (<100ms TTFB). Languages: en, es, fr, de.
+   - description="Ultra-low latency (<100ms TTFB) with deterministic pronunciation control."
+
+3. model_id="mistv2", display_name="Rime Mist v2", is_default=False, streaming=True
+   - High-volume production model. Languages: en, es, fr, de.
+   - description="High-volume production model with deterministic pronunciation."
+
+4. model_id="mist", display_name="Rime Mist", is_default=False, streaming=True
+   - Legacy model. English only.
+   - description="Legacy Mist model — English only."
+
+Use exact model_id values as listed above.
+"""
 
 # ISO 639-2 (3-letter) → BCP-47 (2-letter)
 _ISO3_TO_BCP47: dict[str, str] = {
@@ -79,27 +108,37 @@ _COUNTRY_TO_ACCENT: dict[str, str] = {
     "south africa": "south_african",
 }
 
-# Per-model language coverage (derived from actual voice data + docs)
-_MODEL_LANGUAGES: dict[str, list[str]] = {
-    "arcana":  normalize_languages(["en", "es", "fr", "de", "ar", "he", "hi", "ja", "pt"]),
-    "mistv3":  normalize_languages(["en", "es", "fr", "de"]),
-    "mistv2":  normalize_languages(["en", "es", "fr", "de"]),
-    "mist":    normalize_languages(["en"]),
-}
-
-
 class RimeSyncer(ProviderSyncer):
     provider_id = "rime"
-    source = "api"
+    source = "mixed"
 
     async def sync(self) -> SyncResult:
-        voices_data = await self._fetch_voices()
+        voices_data, (tts_models, notes) = await asyncio.gather(
+            self._fetch_voices(),
+            parse_models_from_docs(
+                seed_urls=_DOCS_URLS,
+                provider_id=self.provider_id,
+                model_type="tts",
+                guidance=_MODEL_GUIDANCE,
+            ),
+        )
+        tts_voices = self._parse_voices(voices_data)
+
+        from_cache = isinstance(notes, dict) and notes.get("source") == "cache"
+        sync_notes = (
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS models (cache)."
+            if from_cache else
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS models."
+        )
+
         return SyncResult(
             stt_models=[],
-            tts_models=self._derive_tts_models(),
-            tts_voices=self._parse_voices(voices_data),
+            tts_models=tts_models,
+            tts_voices=tts_voices,
             source=self.source,
             api_urls=[_VOICES_URL],
+            docs_urls=_DOCS_URLS,
+            notes=sync_notes,
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────
@@ -110,51 +149,10 @@ class RimeSyncer(ProviderSyncer):
             resp.raise_for_status()
             return resp.json()
 
-    def _derive_tts_models(self) -> list[SyncModel]:
-        return [
-            SyncModel(
-                model_id="arcana",
-                display_name="Rime Arcana",
-                type="tts",
-                languages=_MODEL_LANGUAGES["arcana"],
-                streaming=True,
-                is_default=True,
-                description="Rime's flagship TTS model — ultra-realistic, expressive, multilingual.",
-            ),
-            SyncModel(
-                model_id="mistv3",
-                display_name="Rime Mist v3",
-                type="tts",
-                languages=_MODEL_LANGUAGES["mistv3"],
-                streaming=True,
-                is_default=False,
-                description="Ultra-low latency (<100ms TTFB) with deterministic pronunciation control.",
-            ),
-            SyncModel(
-                model_id="mistv2",
-                display_name="Rime Mist v2",
-                type="tts",
-                languages=_MODEL_LANGUAGES["mistv2"],
-                streaming=True,
-                is_default=False,
-                description="High-volume production model with deterministic pronunciation.",
-            ),
-            SyncModel(
-                model_id="mist",
-                display_name="Rime Mist",
-                type="tts",
-                languages=_MODEL_LANGUAGES["mist"],
-                streaming=True,
-                is_default=False,
-                description="Legacy Mist model — English only.",
-            ),
-        ]
-
     def _parse_voices(self, voices_data: list[dict]) -> list[SyncVoice]:
         # Group by speaker — some voices appear in multiple models with the same or
         # different language. Deduplicate into one record per speaker, collecting
         # all model IDs and unioning all languages.
-        from collections import defaultdict
         by_speaker: dict[str, list[dict]] = defaultdict(list)
         for v in voices_data:
             if v.get("speaker"):

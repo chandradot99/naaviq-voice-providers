@@ -3,7 +3,7 @@ LMNT sync script.
 
 Source: mixed
   - TTS voices: GET https://api.lmnt.com/v1/ai/voice/list?owner=system (API)
-  - TTS models: synthetic — no /models endpoint; models are well-known constants
+  - TTS models: AI-parsed from docs (no /models endpoint)
   - STT: not offered — stt_models=[]
 
 Voice API response shape (array):
@@ -24,9 +24,9 @@ Voice API response shape (array):
     ...
   ]
 
-TTS models (no API endpoint — derived synthetically):
-  - blizzard        : flagship model, default, streaming, 21 languages
-  - lmnt-tts-0216  : latency-optimized variant, streaming, 21 languages
+TTS models (no API endpoint — AI-parsed from docs):
+  - blizzard        : flagship model, default, streaming
+  - lmnt-tts-0216  : latency-optimized variant, streaming
 
 Auth: X-API-Key header, LMNT_API_KEY env var.
 """
@@ -38,17 +38,30 @@ import asyncio
 import httpx
 
 from naaviq.config import settings
+from naaviq.sync.ai_parser import parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _VOICES_URL = "https://api.lmnt.com/v1/ai/voice/list"
 
-# 21 languages LMNT supports (ISO 639-1 codes from docs)
-_LMNT_LANGUAGES = normalize_languages([
-    "ar", "zh", "nl", "en", "fr", "de", "hi", "id",
-    "it", "ja", "ko", "pl", "pt", "ru", "es", "sv",
-    "th", "tr", "uk", "ur", "vi",
-])
+_DOCS_URLS = [
+    "https://docs.lmnt.com/api-reference/speech/synthesize-speech-bytes",
+    "https://docs.lmnt.com/guides/models",
+]
+
+_MODEL_GUIDANCE = """
+Extract LMNT TTS models. There are 2 models.
+
+1. model_id="blizzard", display_name="LMNT Blizzard", is_default=True, streaming=True
+   - LMNT's flagship TTS model. Extract the supported languages list from docs.
+   - description="LMNT's flagship TTS model — natural, expressive, high-quality."
+
+2. model_id="lmnt-tts-0216", display_name="LMNT TTS 0216", is_default=False, streaming=True
+   - Latency-optimized variant. Same language support as Blizzard.
+   - description="Latency-optimized LMNT TTS variant for real-time use cases."
+
+Use exact model_id values as listed above.
+"""
 
 # Gender normalization — API returns single-char codes: F, M, U
 _GENDER_MAP: dict[str, str] = {
@@ -67,13 +80,33 @@ class LmntSyncer(ProviderSyncer):
     source = "mixed"
 
     async def sync(self) -> SyncResult:
-        voices_data = await self._fetch_voices()
+        voices_data, (tts_models, notes) = await asyncio.gather(
+            self._fetch_voices(),
+            parse_models_from_docs(
+                seed_urls=_DOCS_URLS,
+                provider_id=self.provider_id,
+                model_type="tts",
+                guidance=_MODEL_GUIDANCE,
+            ),
+        )
+        all_langs = sorted({lang for m in tts_models for lang in m.languages})
+        tts_voices = self._parse_voices(voices_data, all_langs)
+
+        from_cache = isinstance(notes, dict) and notes.get("source") == "cache"
+        sync_notes = (
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS models (cache)."
+            if from_cache else
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS models."
+        )
+
         return SyncResult(
             stt_models=[],
-            tts_models=self._derive_tts_models(),
-            tts_voices=self._parse_voices(voices_data),
+            tts_models=tts_models,
+            tts_voices=tts_voices,
             source=self.source,
             api_urls=[_VOICES_URL],
+            docs_urls=_DOCS_URLS,
+            notes=sync_notes,
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────
@@ -92,29 +125,7 @@ class LmntSyncer(ProviderSyncer):
             resp.raise_for_status()
             return resp.json()
 
-    def _derive_tts_models(self) -> list[SyncModel]:
-        return [
-            SyncModel(
-                model_id="blizzard",
-                display_name="LMNT Blizzard",
-                type="tts",
-                languages=_LMNT_LANGUAGES,
-                streaming=True,
-                is_default=True,
-                description="LMNT's flagship TTS model — natural, expressive, high-quality voice synthesis.",
-            ),
-            SyncModel(
-                model_id="lmnt-tts-0216",
-                display_name="LMNT TTS 0216",
-                type="tts",
-                languages=_LMNT_LANGUAGES,
-                streaming=True,
-                is_default=False,
-                description="Latency-optimized LMNT TTS variant for real-time use cases.",
-            ),
-        ]
-
-    def _parse_voices(self, voices_data: list[dict]) -> list[SyncVoice]:
+    def _parse_voices(self, voices_data: list[dict], all_langs: list[str]) -> list[SyncVoice]:
         voices: list[SyncVoice] = []
         for v in voices_data:
             voice_id = v.get("id")
@@ -136,7 +147,7 @@ class LmntSyncer(ProviderSyncer):
                 display_name=v.get("name", voice_id),
                 gender=gender,
                 category="premade",
-                languages=_LMNT_LANGUAGES,
+                languages=all_langs,
                 description=v.get("description") or None,
                 preview_url=v.get("preview_url") or None,
                 use_cases=use_cases,

@@ -1,13 +1,12 @@
 """
 Neuphonic sync script.
 
-Source: api
-  - TTS voices: GET /voices
-  - TTS models: derived (no /models endpoint — one API model tier)
+Source: mixed
+  - TTS voices: GET /voices (API)
+  - TTS models: AI-parsed from docs (no /models endpoint)
   - STT: not offered — stt_models=[]
 
 Neuphonic is a real-time TTS provider with streaming via WebSocket and SSE.
-Supports 6 languages: English, Spanish, German, Dutch, French, Hindi.
 
 Auth: X-API-KEY header (plain API key, no prefix).
 """
@@ -19,43 +18,61 @@ import asyncio
 import httpx
 
 from naaviq.config import settings
+from naaviq.sync.ai_parser import parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _BASE_URL = "https://api.neuphonic.com"
 _VOICES_PATH = "/voices"
 
-_API_DOCS_URLS = [
-    "https://docs.neuphonic.com/api-reference/voices/get-voices",
+_DOCS_URLS = [
+    "https://docs.neuphonic.com",
+    "https://docs.neuphonic.com/build-group/text-to-speech",
 ]
 
-_MODEL_LANGUAGES = normalize_languages(["en", "es", "de", "nl", "fr", "hi"])
+_MODEL_GUIDANCE = """
+Extract Neuphonic TTS models. There is 1 model.
 
-_TTS_MODELS: list[tuple[str, str, bool]] = [
-    ("neuphonic", "Neuphonic", True),
-]
+model_id="neuphonic", display_name="Neuphonic", is_default=True, streaming=True
+Extract the list of supported languages from the docs.
+description="Real-time TTS via WebSocket and SSE."
+"""
 
 
 class NeurophonicSyncer(ProviderSyncer):
     provider_id = "neuphonic"
-    source = "api"
+    source = "mixed"
 
     async def sync(self) -> SyncResult:
         if not settings.neuphonic_api_key:
             raise ValueError("NEUPHONIC_API_KEY is not set in .env")
 
-        voices_raw = await self._fetch_voices()
+        voices_raw, (tts_models, notes) = await asyncio.gather(
+            self._fetch_voices(),
+            parse_models_from_docs(
+                seed_urls=_DOCS_URLS,
+                provider_id=self.provider_id,
+                model_type="tts",
+                guidance=_MODEL_GUIDANCE,
+            ),
+        )
         tts_voices = self._parse_voices(voices_raw)
-        all_langs = sorted({lang for v in tts_voices for lang in v.languages})
+
+        from_cache = isinstance(notes, dict) and notes.get("source") == "cache"
+        sync_notes = (
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS model (cache)."
+            if from_cache else
+            f"{len(tts_voices)} voices. {len(tts_models)} TTS model."
+        )
 
         return SyncResult(
             stt_models=[],
-            tts_models=self._derive_tts_models(all_langs),
+            tts_models=tts_models,
             tts_voices=tts_voices,
             source=self.source,
             api_urls=[_BASE_URL + _VOICES_PATH],
-            docs_urls=_API_DOCS_URLS,
-            notes=f"{len(tts_voices)} voices, {len(_TTS_MODELS)} model tier. TTS-only.",
+            docs_urls=_DOCS_URLS,
+            notes=sync_notes,
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────
@@ -69,21 +86,6 @@ class NeurophonicSyncer(ProviderSyncer):
             resp.raise_for_status()
             data = resp.json()
             return (data.get("data") or {}).get("voices") or []
-
-    def _derive_tts_models(self, languages: list[str]) -> list[SyncModel]:
-        langs = languages or _MODEL_LANGUAGES
-        return [
-            SyncModel(
-                model_id=model_id,
-                display_name=display_name,
-                type="tts",
-                languages=langs,
-                streaming=True,
-                is_default=is_default,
-                description="Real-time TTS via WebSocket and SSE.",
-            )
-            for model_id, display_name, is_default in _TTS_MODELS
-        ]
 
     def _parse_voices(self, voices: list[dict]) -> list[SyncVoice]:
         result = []
