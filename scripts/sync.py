@@ -58,6 +58,7 @@ _SYNCERS: dict[str, str] = {
     "smallestai":        "naaviq.sync.smallestai.SmallestAISyncer",
     "lovoai":            "naaviq.sync.lovoai.LovoAISyncer",
     "mistral":           "naaviq.sync.mistral.MistralSyncer",
+    "wellsaid":          "naaviq.sync.wellsaid.WellSaidSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -88,6 +89,7 @@ _PROVIDER_META: dict[str, dict] = {
     "smallestai":        {"display_name": "Smallest AI",           "type": "both"},
     "lovoai":            {"display_name": "Lovo AI",               "type": "tts"},
     "mistral":           {"display_name": "Mistral AI",            "type": "both"},
+    "wellsaid":          {"display_name": "WellSaid Labs",         "type": "tts"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
