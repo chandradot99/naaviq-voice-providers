@@ -62,6 +62,7 @@ _SYNCERS: dict[str, str] = {
     "cambai":            "naaviq.sync.cambai.CambAISyncer",
     "speechify":         "naaviq.sync.speechify.SpeechifySyncer",
     "typecastai":        "naaviq.sync.typecastai.TypecastAISyncer",
+    "groq":              "naaviq.sync.groq.GroqSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -96,6 +97,7 @@ _PROVIDER_META: dict[str, dict] = {
     "cambai":            {"display_name": "CAMB.ai",               "type": "both"},
     "speechify":         {"display_name": "Speechify",             "type": "tts"},
     "typecastai":        {"display_name": "Typecast AI",           "type": "tts"},
+    "groq":              {"display_name": "Groq",                  "type": "both"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
