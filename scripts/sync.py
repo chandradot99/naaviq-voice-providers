@@ -56,6 +56,7 @@ _SYNCERS: dict[str, str] = {
     "fishaudio":         "naaviq.sync.fishaudio.FishAudioSyncer",
     "unrealspeech":      "naaviq.sync.unrealspeech.UnrealSpeechSyncer",
     "smallestai":        "naaviq.sync.smallestai.SmallestAISyncer",
+    "lovoai":            "naaviq.sync.lovoai.LovoAISyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -84,6 +85,7 @@ _PROVIDER_META: dict[str, dict] = {
     "fishaudio":         {"display_name": "Fish Audio",            "type": "both"},
     "unrealspeech":      {"display_name": "Unreal Speech",         "type": "tts"},
     "smallestai":        {"display_name": "Smallest AI",           "type": "both"},
+    "lovoai":            {"display_name": "Lovo AI",               "type": "tts"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
