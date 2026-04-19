@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     wellsaid_api_key: str = ""
     cambai_api_key: str = ""
     speechify_api_key: str = ""
+    typecast_api_key: str = ""
     ibm_tts_url: str = "https://api.us-south.text-to-speech.watson.cloud.ibm.com"
     ibm_stt_url: str = "https://api.us-south.speech-to-text.watson.cloud.ibm.com"
 
