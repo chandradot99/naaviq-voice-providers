@@ -194,7 +194,8 @@ class MyProviderSyncer(ProviderSyncer):
 5. Put provider-specific extras in `meta`
 6. For `api` source: call the provider's REST API directly
 7. For `docs` / `mixed` source: call `parse_models_from_docs(seed_urls=…, guidance=…)` for the parts that aren't in an API
-8. Populate `api_urls` and `docs_urls` in the returned `SyncResult` — these are stored in the DB and exposed via the public API
+8. **Never hardcode models, voices, or language lists directly in the syncer.** Even when a provider has no API and the data appears static, always use `parse_models_from_docs` so that: (a) the data lands in `.sync-cache/` for review, (b) re-syncing picks up upstream changes automatically, and (c) the diff/apply workflow works correctly. Hardcoded data bypasses the cache, breaks the diff, and silently goes stale.
+9. Populate `api_urls` and `docs_urls` in the returned `SyncResult` — these are stored in the DB and exposed via the public API
 9. Add an env var to `naaviq/config.py` and `.env.example` if the syncer needs an API key
 10. Register in `naaviq-admin/naaviq_admin/routers/providers.py` `_SYNCERS` dict
 11. Add to `_SYNCERS` and `_PROVIDER_META` in `scripts/sync.py`
