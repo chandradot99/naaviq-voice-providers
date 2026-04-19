@@ -122,7 +122,15 @@ class LovoAISyncer(ProviderSyncer):
                     break
                 page += 1
 
-        return all_voices
+        # Deduplicate — Lovo's paginated API returns overlapping results
+        seen: set[str] = set()
+        unique: list[dict] = []
+        for v in all_voices:
+            vid = v.get("id")
+            if vid and vid not in seen:
+                seen.add(vid)
+                unique.append(v)
+        return unique
 
     def _parse_voices(self, voices_data: list[dict]) -> list[SyncVoice]:
         voices: list[SyncVoice] = []
