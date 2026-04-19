@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     neuphonic_api_key: str = ""
     resemble_api_key: str = ""
     fish_audio_api_key: str = ""
+    unreal_speech_api_key: str = ""
     ibm_tts_url: str = "https://api.us-south.text-to-speech.watson.cloud.ibm.com"
     ibm_stt_url: str = "https://api.us-south.speech-to-text.watson.cloud.ibm.com"
 

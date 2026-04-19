@@ -54,6 +54,7 @@ _SYNCERS: dict[str, str] = {
     "amazon-transcribe": "naaviq.sync.amazon_transcribe.AmazonTranscribeSyncer",
     "resemble":          "naaviq.sync.resemble.ResembleSyncer",
     "fishaudio":         "naaviq.sync.fishaudio.FishAudioSyncer",
+    "unrealspeech":      "naaviq.sync.unrealspeech.UnrealSpeechSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -80,6 +81,7 @@ _PROVIDER_META: dict[str, dict] = {
     "amazon-transcribe": {"display_name": "Amazon Transcribe",    "type": "stt"},
     "resemble":          {"display_name": "Resemble AI",          "type": "tts"},
     "fishaudio":         {"display_name": "Fish Audio",            "type": "both"},
+    "unrealspeech":      {"display_name": "Unreal Speech",         "type": "tts"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
