@@ -24,8 +24,9 @@
 | Gladia | `docs` | ✅ Shipped (AI-parsed STT models; STT-only, 1 model — solaria-1, 130+ langs) |
 | MiniMax | `mixed` | ✅ Shipped (API voices + derived TTS models; TTS-only, 8 models, 332 voices, 38 langs) |
 | IBM Watson | `api` | ✅ Shipped (API voices + derived TTS models + STT models; 3 TTS tiers, 48 voices, 33 STT models) |
+| Neuphonic | `api` | ✅ Shipped (API voices + derived TTS model; TTS-only, 1 model, 62 voices, 16 langs) |
 
-**All planned providers are shipped. Dev DB is populated (19 providers, ~161 models, ~4,930 voices).**
+**All planned providers are shipped. Dev DB is populated (20 providers, ~162 models, ~4,992 voices).**
 
 ---
 

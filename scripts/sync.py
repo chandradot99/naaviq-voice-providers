@@ -50,6 +50,7 @@ _SYNCERS: dict[str, str] = {
     "gladia":       "naaviq.sync.gladia.GladiaSyncer",
     "minimax":      "naaviq.sync.minimax.MinimaxSyncer",
     "ibm":          "naaviq.sync.ibm.IBMSyncer",
+    "neuphonic":    "naaviq.sync.neuphonic.NeurophonicSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -72,6 +73,7 @@ _PROVIDER_META: dict[str, dict] = {
     "gladia":       {"display_name": "Gladia",        "type": "stt"},
     "minimax":      {"display_name": "MiniMax",       "type": "tts"},
     "ibm":          {"display_name": "IBM Watson",    "type": "both"},
+    "neuphonic":    {"display_name": "Neuphonic",     "type": "tts"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}
