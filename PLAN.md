@@ -26,8 +26,9 @@
 | IBM Watson | `api` | ✅ Shipped (API voices + derived TTS models + STT models; 3 TTS tiers, 48 voices, 33 STT models) |
 | Neuphonic | `api` | ✅ Shipped (API voices + derived TTS model; TTS-only, 1 model, 62 voices, 16 langs) |
 | Amazon Transcribe | `docs` | ✅ Shipped (static STT models; STT-only, 3 tiers: batch/streaming/medical, 96 langs) |
+| Resemble AI | `mixed` | ✅ Shipped (API voices + AI-parsed TTS models; TTS-only, 3 models, 185 voices) |
 
-**All planned providers are shipped. Dev DB is populated (21 providers, ~165 models, ~4,992 voices).**
+**All planned providers are shipped. Dev DB is populated (22 providers, ~168 models, ~5,177 voices).**
 
 ---
 

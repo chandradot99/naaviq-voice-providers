@@ -52,6 +52,7 @@ _SYNCERS: dict[str, str] = {
     "ibm":          "naaviq.sync.ibm.IBMSyncer",
     "neuphonic":         "naaviq.sync.neuphonic.NeurophonicSyncer",
     "amazon-transcribe": "naaviq.sync.amazon_transcribe.AmazonTranscribeSyncer",
+    "resemble":          "naaviq.sync.resemble.ResembleSyncer",
 }
 
 _PROVIDER_META: dict[str, dict] = {
@@ -76,6 +77,7 @@ _PROVIDER_META: dict[str, dict] = {
     "ibm":          {"display_name": "IBM Watson",    "type": "both"},
     "neuphonic":         {"display_name": "Neuphonic",            "type": "tts"},
     "amazon-transcribe": {"display_name": "Amazon Transcribe",    "type": "stt"},
+    "resemble":          {"display_name": "Resemble AI",          "type": "tts"},
 }
 
 _MODEL_IDENTITY = {"model_id", "type"}

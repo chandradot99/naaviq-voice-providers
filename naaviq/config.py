@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     ibm_tts_api_key: str = ""
     ibm_stt_api_key: str = ""
     neuphonic_api_key: str = ""
+    resemble_api_key: str = ""
     ibm_tts_url: str = "https://api.us-south.text-to-speech.watson.cloud.ibm.com"
     ibm_stt_url: str = "https://api.us-south.speech-to-text.watson.cloud.ibm.com"
 
