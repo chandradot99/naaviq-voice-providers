@@ -2,7 +2,7 @@
 
 Open-source voice provider registry — STT/TTS models and voices.
 
-A public read-only REST API at `providers.naaviq.ai` that serves up-to-date metadata about voice AI providers (Deepgram, Cartesia, ElevenLabs, OpenAI, Google Cloud, Sarvam, Azure, Amazon Polly, Hume AI, Inworld AI, Murf AI, Speechmatics, LMNT, Rime AI, AssemblyAI, Rev AI, Gladia, MiniMax, IBM Watson, Neuphonic) so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
+A public read-only REST API at `providers.naaviq.ai` that serves up-to-date metadata about voice AI providers (Deepgram, Cartesia, ElevenLabs, OpenAI, Google Cloud, Sarvam, Azure, Amazon Polly, Hume AI, Inworld AI, Murf AI, Speechmatics, LMNT, Rime AI, AssemblyAI, Rev AI, Gladia, MiniMax, IBM Watson, Neuphonic, Amazon Transcribe) so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
 
 ## What's in here
 

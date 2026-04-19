@@ -25,8 +25,9 @@
 | MiniMax | `mixed` | ✅ Shipped (API voices + derived TTS models; TTS-only, 8 models, 332 voices, 38 langs) |
 | IBM Watson | `api` | ✅ Shipped (API voices + derived TTS models + STT models; 3 TTS tiers, 48 voices, 33 STT models) |
 | Neuphonic | `api` | ✅ Shipped (API voices + derived TTS model; TTS-only, 1 model, 62 voices, 16 langs) |
+| Amazon Transcribe | `docs` | ✅ Shipped (static STT models; STT-only, 3 tiers: batch/streaming/medical, 96 langs) |
 
-**All planned providers are shipped. Dev DB is populated (20 providers, ~162 models, ~4,992 voices).**
+**All planned providers are shipped. Dev DB is populated (21 providers, ~165 models, ~4,992 voices).**
 
 ---
 
