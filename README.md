@@ -2,7 +2,9 @@
 
 Open-source voice provider registry — STT/TTS models and voices.
 
-A public read-only REST API at `providers.naaviq.ai` that serves up-to-date metadata about voice AI providers (Deepgram, Cartesia, ElevenLabs, OpenAI, Google Cloud, Sarvam, Azure, Amazon Polly, Hume AI, Inworld AI, Murf AI, Speechmatics, LMNT, Rime AI, AssemblyAI, Rev AI, Gladia, MiniMax, IBM Watson, Neuphonic, Amazon Transcribe, Resemble AI) so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
+A public read-only REST API at `providers.naaviq.ai` that serves up-to-date metadata about voice AI providers so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
+
+**32 providers covered:** Deepgram, Cartesia, ElevenLabs, OpenAI, Google Cloud, Sarvam, Azure Speech, Amazon Polly, Hume AI, Inworld AI, Murf AI, Speechmatics, LMNT, Rime AI, AssemblyAI, Rev AI, Gladia, MiniMax, IBM Watson, Neuphonic, Amazon Transcribe, Resemble AI, Fish Audio, Unreal Speech, Smallest AI, Lovo AI, Mistral AI, WellSaid Labs, CAMB.ai, Speechify, Typecast AI, Groq
 
 ## What's in here
 
@@ -18,9 +20,9 @@ Each provider has a syncer that returns a `SyncResult(stt_models, tts_models, tt
 
 | Source | When | Examples |
 |---|---|---|
-| `api` | Provider exposes a REST models/voices endpoint | Deepgram, Azure, Amazon Polly, Rime AI |
-| `docs` | No API — parse docs with an AI model | OpenAI, Sarvam, Speechmatics, AssemblyAI, Rev AI |
-| `mixed` | Some endpoints exist, some require parsing docs | Cartesia, ElevenLabs, Hume AI, Inworld AI, LMNT |
+| `api` | Provider exposes a REST models/voices endpoint | Deepgram, Azure, Amazon Polly, Rime AI, Murf, IBM |
+| `docs` | No API — parse docs with an AI model | OpenAI, Sarvam, Speechmatics, AssemblyAI, Rev AI, Unreal Speech |
+| `mixed` | Some endpoints exist, some require parsing docs | Cartesia, ElevenLabs, Hume AI, LMNT, Fish Audio, Groq, CAMB.ai |
 
 For `docs` and `mixed` sources, `naaviq/sync/ai_parser.py` runs an agentic Claude loop to extract structured `SyncModel` objects from documentation pages. Each provider row stores `api_urls` and `docs_urls` so consumers can trace where the data came from.
 

@@ -67,22 +67,38 @@ naaviq-voice-providers/
 │       ├── language.py   — BCP-47 normalization + ACCENT_MAP
 │       ├── ai_parser.py  — Agentic Claude loop for parsing models/voices from docs
 │       ├── cache.py      — JSON cache for AI-extracted data (.sync-cache/ dir, gitignored)
-│       ├── deepgram.py   — Deepgram syncer (api)
-│       ├── cartesia.py   — Cartesia syncer (mixed: API voices + AI-parsed models)
-│       ├── elevenlabs.py — ElevenLabs syncer (mixed: API TTS/voices + AI-parsed STT)
-│       ├── openai.py     — OpenAI syncer (docs: AI-parsed TTS/STT models + voices)
-│       ├── google_cloud.py — Google Cloud syncer (mixed: API voices + AI-parsed tiers/STT)
-│       ├── sarvam.py     — Sarvam syncer (docs: AI-parsed STT/TTS models + voices)
-│       ├── azure.py      — Azure Speech syncer (api: API voices + derived TTS models + synthetic STT)
-│       ├── amazon_polly.py — Amazon Polly syncer (api: API voices + derived TTS models; TTS-only)
-│       ├── humeai.py     — Hume AI syncer (mixed: API voices + AI-parsed TTS models; TTS-only)
-│       ├── inworld.py    — Inworld AI syncer (mixed: API voices + AI-parsed TTS/STT models)
-│       ├── murf.py       — Murf AI syncer (api: API voices + derived TTS models; TTS-only)
-│       ├── speechmatics.py — Speechmatics syncer (docs: AI-parsed STT models; STT-only)
-│       ├── lmnt.py       — LMNT syncer (mixed: API voices + derived TTS models; TTS-only)
-│       ├── rime.py       — Rime AI syncer (api: API voices + derived TTS models; TTS-only)
-│       ├── assemblyai.py — AssemblyAI syncer (docs: AI-parsed STT models; STT-only)
-│       └── revai.py      — Rev AI syncer (docs: AI-parsed STT models; STT-only)
+│       ├── deepgram.py        — Deepgram (api: both)
+│       ├── cartesia.py        — Cartesia (mixed: both)
+│       ├── elevenlabs.py      — ElevenLabs (mixed: both)
+│       ├── openai.py          — OpenAI (docs: both)
+│       ├── google_cloud.py    — Google Cloud (mixed: both)
+│       ├── sarvam.py          — Sarvam (docs: both)
+│       ├── azure.py           — Azure Speech (api: both)
+│       ├── amazon_polly.py    — Amazon Polly (api: tts)
+│       ├── humeai.py          — Hume AI (mixed: tts)
+│       ├── inworld.py         — Inworld AI (mixed: both)
+│       ├── murf.py            — Murf AI (api: tts)
+│       ├── speechmatics.py    — Speechmatics (docs: stt)
+│       ├── lmnt.py            — LMNT (mixed: tts)
+│       ├── rime.py            — Rime AI (api: tts)
+│       ├── assemblyai.py      — AssemblyAI (docs: stt)
+│       ├── revai.py           — Rev AI (docs: stt)
+│       ├── gladia.py          — Gladia (docs: stt)
+│       ├── minimax.py         — MiniMax (mixed: tts)
+│       ├── ibm.py             — IBM Watson (api: both)
+│       ├── neuphonic.py       — Neuphonic (api: tts)
+│       ├── amazon_transcribe.py — Amazon Transcribe (docs: stt)
+│       ├── resemble.py        — Resemble AI (mixed: tts)
+│       ├── fishaudio.py       — Fish Audio (mixed: both)
+│       ├── unrealspeech.py    — Unreal Speech (docs: tts)
+│       ├── smallestai.py      — Smallest AI (mixed: both)
+│       ├── lovoai.py          — Lovo AI (mixed: tts)
+│       ├── mistral.py         — Mistral AI (mixed: both)
+│       ├── wellsaid.py        — WellSaid Labs (mixed: tts)
+│       ├── cambai.py          — CAMB.ai (mixed: both)
+│       ├── speechify.py       — Speechify (mixed: tts)
+│       ├── typecastai.py      — Typecast AI (mixed: tts)
+│       └── groq.py            — Groq (mixed: both)
 ├── scripts/
 │   ├── sync.py           — run syncers, diff vs dev DB, apply to dev DB
 │   └── promote.py        — copy dev DB state → prod DB (zero token cost)
@@ -243,15 +259,6 @@ do NOT need ANTHROPIC_API_KEY.
 ### Path B: Admin UI
 
 Fetch → diff → apply via the `naaviq-admin` API and `naaviq-admin-ui` frontend. Good for visual diff review. Also requires `ANTHROPIC_API_KEY` for AI-parsed providers.
-
-## Development strategy
-
-**No DB population until all providers are implemented.**
-
-Schema changes (new columns, indexes) are cheap pre-production — just downgrade, edit the migration, upgrade. Migrating live data is expensive. So during development:
-
-- Test each syncer with smoke tests only: `uv run python -m naaviq.sync.<provider>`
-- Once all planned providers are done → run `scripts/sync.py` to populate dev DB, review, then `scripts/promote.py` to push to prod
 
 ## Quick start
 
