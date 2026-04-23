@@ -9,7 +9,6 @@ class Settings(BaseSettings):
 
     database_url: str                      # prod DB — served by the public API (Railway standard)
     dev_database_url: str = ""             # dev DB — target of scripts/sync.py; source of scripts/promote.py
-    public_api_url: str = ""              # shown in OpenAPI docs as the server URL (e.g. https://providers.naaviq.ai)
     rate_limit: str = "100/minute"
 
     # Provider API keys — used by sync scripts

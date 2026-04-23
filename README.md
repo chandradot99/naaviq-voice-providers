@@ -2,43 +2,9 @@
 
 Open-source voice provider registry — STT/TTS models and voices.
 
-A public read-only REST API that serves up-to-date metadata about voice AI providers so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
+A public read-only REST API at [naaviq-voice-providers-production.up.railway.app](https://naaviq-voice-providers-production.up.railway.app) that serves up-to-date metadata about voice AI providers so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
 
 **32 providers covered:** Deepgram, Cartesia, ElevenLabs, OpenAI, Google Cloud, Sarvam, Azure Speech, Amazon Polly, Hume AI, Inworld AI, Murf AI, Speechmatics, LMNT, Rime AI, AssemblyAI, Rev AI, Gladia, MiniMax, IBM Watson, Neuphonic, Amazon Transcribe, Resemble AI, Fish Audio, Unreal Speech, Smallest AI, Lovo AI, Mistral AI, WellSaid Labs, CAMB.ai, Speechify, Typecast AI, Groq
-
-## Live API
-
-```
-Base URL: https://naaviq-voice-providers-production.up.railway.app
-```
-
-Try it now — no auth required:
-
-```bash
-# List all providers
-curl https://naaviq-voice-providers-production.up.railway.app/v1/providers
-
-# Get a single provider
-curl https://naaviq-voice-providers-production.up.railway.app/v1/providers/elevenlabs
-
-# List TTS models for a provider
-curl https://naaviq-voice-providers-production.up.railway.app/v1/providers/elevenlabs/models?type=tts
-
-# List voices
-curl https://naaviq-voice-providers-production.up.railway.app/v1/providers/elevenlabs/voices
-```
-
-## API Endpoints
-
-| Method | Path | Description |
-|---|---|---|
-| GET | `/v1/providers` | List all active providers |
-| GET | `/v1/providers/{id}` | Get a single provider (includes `api_urls`, `docs_urls`) |
-| GET | `/v1/providers/{id}/models` | List models (filter: `?type=stt\|tts`, `?capabilities=a,b`) |
-| GET | `/v1/providers/{id}/voices` | List voices (filter: `?gender=male\|female`, `?capabilities=a,b`) |
-| GET | `/health` | Health check |
-
-All list endpoints support `?updated_since=<ISO-8601>` for incremental polling.
 
 ## What's in here
 
@@ -47,32 +13,6 @@ All list endpoints support `?updated_since=<ISO-8601>` for incremental polling.
 - **`scripts/`** — `sync.py` (dev DB) and `promote.py` (dev → prod)
 - **`alembic/`** — DB migrations
 - **`tests/`** — basic API smoke tests
-
-## Running locally
-
-**Requirements:** Python 3.12+, [uv](https://docs.astral.sh/uv/), Docker
-
-```bash
-# 1. Clone and install dependencies
-git clone https://github.com/chandradot99/naaviq-voice-providers
-cd naaviq-voice-providers
-uv sync
-
-# 2. Start Postgres
-docker compose up -d
-
-# 3. Configure environment
-cp .env.example .env
-# Edit .env — set DATABASE_URL to the local Postgres URL from docker-compose
-
-# 4. Run migrations
-uv run alembic upgrade head
-
-# 5. Start the API server
-uv run uvicorn naaviq.main:app --reload
-```
-
-The API is now available at `http://localhost:8000`.
 
 ## Sync architecture
 
@@ -85,6 +25,16 @@ Each provider has a syncer that returns a `SyncResult(stt_models, tts_models, tt
 | `mixed` | Some endpoints exist, some require parsing docs | Cartesia, ElevenLabs, Google Cloud, Hume AI, Inworld, Murf, Rime AI, LMNT, Fish Audio, Groq, CAMB.ai |
 
 For `docs` and `mixed` sources, `naaviq/sync/ai_parser.py` runs an agentic Claude loop to extract structured `SyncModel` objects from documentation pages. Each provider row stores `api_urls` and `docs_urls` so consumers can trace where the data came from.
+
+## Quick start
+
+```bash
+docker compose up -d           # start Postgres
+cp .env.example .env
+uv sync
+uv run alembic upgrade head    # create tables
+uv run uvicorn naaviq.main:app --reload
+```
 
 ## Syncing providers to the DB
 
@@ -148,6 +98,16 @@ uv run pytest
 ```
 
 CI runs lint (`ruff`), migrations (`alembic upgrade head`), and `pytest` against a Postgres service container on every push and PR. Deploys to Railway are gated on CI passing.
+
+## Public API endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/v1/providers` | List all active providers |
+| GET | `/v1/providers/{id}` | Get a single provider (includes `api_urls`, `docs_urls`) |
+| GET | `/v1/providers/{id}/models` | List models (filter: `?type=stt\|tts`) |
+| GET | `/v1/providers/{id}/voices` | List voices (filter: `?gender=male\|female`) |
+| GET | `/health` | Health check |
 
 ## Contributing a new provider
 
