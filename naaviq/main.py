@@ -9,6 +9,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 
+from naaviq.config import settings
 from naaviq.db import engine
 from naaviq.limiter import limiter
 from naaviq.routers import catalog, providers
@@ -31,6 +32,8 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
+_servers = [{"url": settings.public_api_url}] if settings.public_api_url else None
+
 app = FastAPI(
     title="Naaviq Voice Providers",
     description="Open-source voice provider registry — STT/TTS models and voices",
@@ -38,6 +41,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
+    servers=_servers,
 )
 
 # Rate limiting
