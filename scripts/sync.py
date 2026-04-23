@@ -28,6 +28,7 @@ from sqlalchemy.orm import sessionmaker
 from naaviq.config import settings
 from naaviq.models import Model, Provider, SyncRun, Voice, derive_provider_type
 from naaviq.sync.base import SyncModel, SyncResult, SyncVoice
+from naaviq.sync.cache import _models_path, _voices_path
 from naaviq.sync.registry import BY_ID, REGISTRY, load_syncer
 
 _SYNC_ERROR_MAX_CHARS = 8000   # cap stored error text
@@ -158,6 +159,20 @@ async def _apply_voices(
 
 def _section_stats_dict(s: SectionStats) -> dict:
     return {"added": s.added, "updated": s.updated, "deprecated": s.deprecated}
+
+
+def _clear_provider_cache(provider_id: str) -> None:
+    """Remove .sync-cache/ files for this provider so the next sync is forced to re-parse.
+
+    Run only after an --apply. Dry-runs preserve cache so the operator can apply
+    without re-parsing.
+    """
+    for p in (
+        _models_path(provider_id, "stt"),
+        _models_path(provider_id, "tts"),
+        _voices_path(provider_id),
+    ):
+        p.unlink(missing_ok=True)
 
 
 async def _record_sync_error(
@@ -304,8 +319,11 @@ async def main() -> None:
     success = 0
     for provider_id in provider_ids:
         async with Session() as session:
-            if await sync_provider(provider_id, session, apply=args.apply):
+            ok = await sync_provider(provider_id, session, apply=args.apply)
+            if ok:
                 success += 1
+        if args.apply:
+            _clear_provider_cache(provider_id)
 
     print(f"\n{'═' * 52}")
     if args.apply:
