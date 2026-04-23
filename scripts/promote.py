@@ -15,7 +15,7 @@ Usage:
     uv run python scripts/promote.py cartesia --apply # promote one provider
 
 Requirements:
-    PROD_DATABASE_URL must be set in .env
+    DEV_DATABASE_URL (source) and DATABASE_URL (prod target) must both be set in .env
 """
 
 from __future__ import annotations
@@ -206,15 +206,18 @@ async def main() -> None:
     parser.add_argument("--apply", action="store_true", help="Write to prod DB (default: dry-run only)")
     args = parser.parse_args()
 
-    if not settings.prod_database_url:
-        print("✗ PROD_DATABASE_URL is not set in .env")
+    if not settings.dev_database_url:
+        print("✗ DEV_DATABASE_URL is not set in .env")
+        return
+    if not settings.database_url:
+        print("✗ DATABASE_URL (prod) is not set in .env")
         return
 
-    print(f"Dev DB : {settings.database_url}")
-    print(f"Prod DB: {settings.prod_database_url}")
+    print(f"Dev DB : {settings.dev_database_url}")
+    print(f"Prod DB: {settings.database_url}")
 
-    dev_engine = create_async_engine(settings.database_url)
-    prod_engine = create_async_engine(settings.prod_database_url)
+    dev_engine = create_async_engine(settings.dev_database_url)
+    prod_engine = create_async_engine(settings.database_url)
     DevSession = sessionmaker(dev_engine, class_=AsyncSession, expire_on_commit=False)
     ProdSession = sessionmaker(prod_engine, class_=AsyncSession, expire_on_commit=False)
 

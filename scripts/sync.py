@@ -308,12 +308,16 @@ async def main() -> None:
 
     provider_ids = args.providers or [e.provider_id for e in REGISTRY]
 
+    if not settings.dev_database_url:
+        print("✗ DEV_DATABASE_URL is not set in .env")
+        return
+
     mode = "APPLY" if args.apply else "DRY-RUN"
-    print(f"Dev DB : {settings.database_url}")
+    print(f"Dev DB : {settings.dev_database_url}")
     print(f"Mode   : {mode}")
     print(f"Syncing: {', '.join(provider_ids)}")
 
-    engine = create_async_engine(settings.database_url)
+    engine = create_async_engine(settings.dev_database_url)
     Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     success = 0

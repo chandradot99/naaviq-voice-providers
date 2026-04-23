@@ -7,8 +7,8 @@ load_dotenv()
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore")
 
-    database_url: str                      # dev / local DB
-    prod_database_url: str = ""            # prod DB — only needed for scripts/promote.py
+    database_url: str                      # prod DB — served by the public API (Railway standard)
+    dev_database_url: str = ""             # dev DB — target of scripts/sync.py; source of scripts/promote.py
     rate_limit: str = "100/minute"
 
     # Provider API keys — used by sync scripts

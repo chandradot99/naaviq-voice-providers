@@ -79,7 +79,7 @@ uv run python scripts/promote.py           # dry-run
 uv run python scripts/promote.py --apply   # write to prod DB
 ```
 
-Requires `PROD_DATABASE_URL` in `.env`. See `CLAUDE.md` for the full sync workflow reference.
+Requires `DEV_DATABASE_URL` (source) and `DATABASE_URL` (prod target) in `.env`. See `CLAUDE.md` for the full sync workflow reference.
 
 ## Running a single syncer locally (smoke test)
 

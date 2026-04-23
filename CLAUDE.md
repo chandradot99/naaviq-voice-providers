@@ -351,8 +351,8 @@ uv run python scripts/sync.py --apply            # apply all providers
 uv run python scripts/promote.py --apply         # promote dev → prod (no AI, pure copy)
 ```
 
-- `DATABASE_URL` in `.env` = dev DB
-- `PROD_DATABASE_URL` in `.env` = prod DB (only needed for promote)
+- `DATABASE_URL` in `.env` = **prod** DB (Railway convention — served by the public API)
+- `DEV_DATABASE_URL` in `.env` = **dev** DB (target of `scripts/sync.py`, source of `scripts/promote.py`)
 
 ### Path B: Direct script run with `ANTHROPIC_API_KEY` (contributors / CI)
 
