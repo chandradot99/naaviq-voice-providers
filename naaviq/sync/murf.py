@@ -151,7 +151,7 @@ class MurfAISyncer(ProviderSyncer):
                 category="premade",
                 languages=languages,
                 accent=accent,
-                compatible_models=[],
+                compatible_models=["*"],
                 meta=meta,
             ))
         return voices

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -34,8 +34,16 @@ class ModelOut(BaseModel):
     languages: list[str]
     streaming: bool
     is_default: bool
+    lifecycle: str
     description: str | None
-    eol_date: str | None
+    eol_date: date | None
+    sample_rates_hz: list[int]
+    audio_formats: list[str]
+    max_text_chars: int | None
+    max_audio_seconds: int | None
+    capabilities: list[str]
+    regions: list[str]
+    pricing: dict
     meta: dict
     deprecated_at: datetime | None
     updated_at: datetime
@@ -58,6 +66,7 @@ class VoiceOut(BaseModel):
     use_cases: list[str]
     tags: list[str]
     compatible_models: list[str]
+    capabilities: list[str]
     meta: dict
     deprecated_at: datetime | None
     updated_at: datetime

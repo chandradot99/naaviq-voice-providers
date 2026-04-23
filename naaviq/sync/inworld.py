@@ -170,7 +170,7 @@ class InworldAISyncer(ProviderSyncer):
                 accent=accent,
                 age=age,
                 description=v.get("description"),
-                compatible_models=[],
+                compatible_models=["*"],
                 meta=meta,
             ))
         return voices

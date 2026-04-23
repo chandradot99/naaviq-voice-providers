@@ -151,7 +151,7 @@ class LmntSyncer(ProviderSyncer):
                 description=v.get("description") or None,
                 preview_url=v.get("preview_url") or None,
                 use_cases=use_cases,
-                compatible_models=[],  # all voices work with all LMNT models
+                compatible_models=["*"],  # all voices work with all LMNT models
                 meta={"type": v.get("type")},
             ))
         return voices

@@ -175,7 +175,7 @@ class SmallestAISyncer(ProviderSyncer):
                 category="premade",
                 languages=languages,
                 accent=accent,
-                compatible_models=[],  # all voices work with all Lightning models
+                compatible_models=["*"],  # all voices work with all Lightning models
                 meta={},
             ))
         return voices

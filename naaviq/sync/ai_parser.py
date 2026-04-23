@@ -69,8 +69,33 @@ SyncModel schema (each item in the `models` array):
   - languages (list[str])            — BCP-47 with uppercase region: "en", "en-US", "hi-IN". Use ["*"] only when docs explicitly say multilingual.
   - streaming (bool, default true)
   - is_default (bool, default false) — at most ONE per (provider, type). Pick the latest/recommended.
+  - lifecycle (str, default "ga") — one of "alpha" | "beta" | "ga". Use alpha/beta when docs explicitly label the model as such (e.g., "Preview", "Experimental", "Beta"). Otherwise "ga". NEVER emit "deprecated" — that's handled downstream.
   - description (str | omit)
   - eol_date (str | omit)            — "YYYY-MM-DD" if the docs state an end-of-life date for this model
+  - sample_rates_hz (list[int] | omit)  — supported sample rates in Hz. TTS=output rates, STT=input rates. E.g., [8000, 16000, 24000, 48000]. Omit if docs don't specify.
+  - audio_formats (list[str] | omit)    — audio formats. TTS=output formats produced, STT=input formats accepted. Lowercase, e.g., ["mp3", "wav", "pcm", "opus", "flac", "ogg"]. Omit if docs don't specify.
+  - max_text_chars (int | omit)         — TTS-only. Maximum characters per single request as documented. Omit for STT or if not specified.
+  - max_audio_seconds (int | omit)      — STT-only. Maximum audio duration per single request, in seconds. Omit for TTS or if not specified.
+  - capabilities (list[str] | omit)     — canonical capability flags. ONLY use strings from this controlled vocabulary (no freeform):
+      STT: word_timestamps | speaker_diarization | punctuation | profanity_filter | custom_vocabulary |
+           language_detection | translation | sentiment | pii_redaction | summarization | topic_detection
+      TTS: emotion | voice_cloning | voice_design | ssml | phoneme_input | prosody_control | style_control | multi_speaker
+      Include a flag only when the docs clearly state the model supports the feature. Skip unknown/custom features (put them in `meta` if needed).
+  - regions (list[str] | omit)       — deployment regions. Canonical vocab ONLY: us | eu | asia | global.
+      Use ["global"] if docs say the model is available worldwide / no regional restriction.
+      Use a specific list like ["us","eu"] if docs restrict availability to those regions.
+      Omit entirely when docs don't mention regions — don't guess "global" as a fallback.
+  - pricing (object | omit)          — per-model pricing; omit if not on docs/pricing page. Shape:
+      {
+        "unit":       "character" | "minute" | "second" | "word" | "token" | "request" | "hour",
+        "price_usd":  <float>,                                                  # cost per unit in USD
+        "free_quota": {"amount": <int>, "unit": <str>, "period": "month"|"day"|"once"} | omit,
+        "variants":   [{"applies_to": <str>, "unit": <str>, "price_usd": <float>}, ...] | omit,
+        "as_of":      "YYYY-MM-DD",                                             # capture date
+        "source_url": "<pricing-page-url>",
+        "notes":      "<short qualifier>" | omit
+      }
+    Only populate when you find explicit numeric pricing in the docs — never guess.
   - meta (object)                    — provider-specific extras that don't fit elsewhere
 
 Rules:
@@ -80,6 +105,7 @@ Rules:
   4. Follow links from the seed page only when the seed lacks the data.
   5. When you have all models, call return_models ONCE. Don't call it twice.
   6. If a page is truncated, follow links to subpages instead of guessing.
+  7. For pricing: only include if an explicit number is on the pricing/docs page. Omit the whole object otherwise — never make up a price.
 """
 
 _VOICES_SYSTEM_PROMPT = """You are a documentation parser for an open-source voice provider registry.
@@ -95,22 +121,25 @@ SyncVoice schema (each item in the `voices` array):
   - display_name (str, required)      — human-readable name (title-case of voice_id if docs don't give a different name)
   - gender ("male" | "female" | "neutral" | omit) — infer from docs; omit if not mentioned
   - category ("premade" | "cloned" | "generated") — default "premade" for built-in voices
-  - languages (list[str])             — BCP-47 with uppercase region. Use [] if voice supports all provider languages.
+  - languages (list[str])             — BCP-47 with uppercase region. Use ["*"] if the voice supports all provider languages (multilingual). Use [] only when languages are unknown/unmapped.
   - description (str | omit)
   - preview_url (str | omit)          — only if a direct audio sample URL is explicitly in the docs
   - accent (str | omit)               — e.g., "british", "american", "indian"
   - age (str | omit)                  — e.g., "young", "middle-aged", "old"
   - use_cases (list[str] | omit)      — e.g., ["narration", "IVR"]
   - tags (list[str] | omit)           — e.g., ["deep", "friendly"]
-  - compatible_models (list[str])     — TTS model IDs this voice works with. [] = works with all models.
+  - compatible_models (list[str])     — TTS model IDs this voice works with. ["*"] = works with all models. [] = unknown.
+  - capabilities (list[str] | omit)   — voice-level capability flags. Canonical vocab (no freeform):
+      emotion | multilingual_native
+      Most capabilities live at the model level; only set a voice capability when a feature is opt-in per voice within a model that exposes it generally.
   - meta (object | omit)              — provider-specific extras
 
 Rules:
   1. Don't invent fields. If docs don't say, omit.
-  2. Languages in BCP-47 with uppercase region. [] means the voice supports all provider languages.
+  2. Languages in BCP-47 with uppercase region. ["*"] means the voice supports all provider languages; [] means unknown.
   3. Don't invent preview_url if not explicitly in the docs.
   4. category defaults to "premade" for all built-in provider voices.
-  5. Populate compatible_models with the TTS model ID(s) this voice works with. Use [] if it works with all models.
+  5. Populate compatible_models with the TTS model ID(s) this voice works with. Use ["*"] if it works with all models. Use [] only if unknown/unclear.
   6. Call return_voices ONCE with all voices found. Don't call it twice.
   7. Follow links if the seed page lacks complete voice data.
 """
@@ -149,9 +178,17 @@ _MODELS_TOOLS = [
                             "languages":    {"type": "array", "items": {"type": "string"}},
                             "streaming":    {"type": "boolean"},
                             "is_default":   {"type": "boolean"},
-                            "description":  {"type": "string"},
-                            "eol_date":     {"type": "string"},
-                            "meta":         {"type": "object"},
+                            "lifecycle":    {"type": "string", "enum": ["alpha", "beta", "ga"]},
+                            "description":      {"type": "string"},
+                            "eol_date":         {"type": "string"},
+                            "sample_rates_hz":  {"type": "array", "items": {"type": "integer"}},
+                            "audio_formats":    {"type": "array", "items": {"type": "string"}},
+                            "max_text_chars":   {"type": "integer"},
+                            "max_audio_seconds":{"type": "integer"},
+                            "capabilities":     {"type": "array", "items": {"type": "string"}},
+                            "regions":          {"type": "array", "items": {"type": "string", "enum": ["us", "eu", "asia", "global"]}},
+                            "pricing":          {"type": "object"},
+                            "meta":             {"type": "object"},
                         },
                         "required": ["model_id", "display_name", "type"],
                     },
@@ -187,6 +224,7 @@ _VOICES_TOOLS = [
                             "use_cases":    {"type": "array", "items": {"type": "string"}},
                             "tags":         {"type": "array", "items": {"type": "string"}},
                             "compatible_models": {"type": "array", "items": {"type": "string"}},
+                            "capabilities": {"type": "array", "items": {"type": "string"}},
                             "meta":         {"type": "object"},
                         },
                         "required": ["voice_id", "display_name"],
@@ -200,6 +238,24 @@ _VOICES_TOOLS = [
 
 
 # ── Public API ─────────────────────────────────────────────────────────────────
+
+
+def notes_to_str(notes: dict | None) -> str | None:
+    """Render an ai_parser notes dict as a one-line provenance string for SyncResult.notes.
+
+    `sync_runs.notes` is VARCHAR, so syncers that pass parser output straight
+    through must flatten the dict first.
+    """
+    if not notes:
+        return None
+    if notes.get("source") == "cache":
+        return f"cache: {notes.get('path', '')}"
+    return (
+        f"ai-parser: model={notes.get('model', '?')}, "
+        f"in={notes.get('input_tokens', 0)}, out={notes.get('output_tokens', 0)}, "
+        f"urls_fetched={len(notes.get('urls_fetched', []))}"
+    )
+
 
 async def parse_models_from_docs(
     seed_urls: list[str],
@@ -220,6 +276,8 @@ async def parse_models_from_docs(
       Runs the agentic Claude loop directly — cache is ignored.
 
     Returns (models, notes) where notes contains provenance for SyncResult.notes.
+    Syncers that pass the raw dict into SyncResult.notes must stringify it first —
+    sync_runs.notes is VARCHAR.
     """
     if not seed_urls:
         raise AIParserError("seed_urls must contain at least one URL")
@@ -546,8 +604,16 @@ def _to_sync_model(d: dict) -> SyncModel:
         languages=normalize_languages(d.get("languages") or []),
         streaming=d.get("streaming", True),
         is_default=d.get("is_default", False),
+        lifecycle=d.get("lifecycle") or "ga",
         description=d.get("description"),
         eol_date=d.get("eol_date"),
+        sample_rates_hz=d.get("sample_rates_hz") or [],
+        audio_formats=d.get("audio_formats") or [],
+        max_text_chars=d.get("max_text_chars"),
+        max_audio_seconds=d.get("max_audio_seconds"),
+        capabilities=d.get("capabilities") or [],
+        regions=d.get("regions") or [],
+        pricing=d.get("pricing") or {},
         meta=d.get("meta") or {},
     )
 
@@ -566,6 +632,7 @@ def _to_sync_voice(d: dict) -> SyncVoice:
         use_cases=d.get("use_cases") or [],
         tags=d.get("tags") or [],
         compatible_models=d.get("compatible_models") or [],
+        capabilities=d.get("capabilities") or [],
         meta=d.get("meta") or {},
     )
 

@@ -38,21 +38,48 @@ uv run uvicorn naaviq.main:app --reload
 
 ## Syncing providers to the DB
 
-```bash
-# Dry-run (default) — shows diff, no writes
-uv run python scripts/sync.py
-uv run python scripts/sync.py cartesia deepgram
+There are two ways to sync. Both use the same `naaviq/sync/*.py` scripts and produce identical DB state — they differ only in **who performs the AI extraction** for `docs`/`mixed` providers.
 
-# Apply to dev DB
-uv run python scripts/sync.py --apply
-uv run python scripts/sync.py cartesia --apply
+### Path A — Claude Code (recommended for maintainers)
 
-# Promote dev → prod
-uv run python scripts/promote.py          # dry-run
-uv run python scripts/promote.py --apply  # write to prod
+Ask Claude Code (in your terminal) to sync a provider. For `docs`/`mixed` providers, Claude Code fetches the docs, produces structured JSON, writes it to `.sync-cache/`, and then runs the sync script. The script reads the cache, skips the internal AI parser, and never calls the Anthropic API. **No `ANTHROPIC_API_KEY` needed.**
+
+```
+# In your Claude Code conversation:
+"sync cartesia to dev DB"
 ```
 
-No `ANTHROPIC_API_KEY` needed when running via Claude Code — it extracts docs-based provider data and writes local cache files that the sync scripts read automatically. See `CLAUDE.md` for details.
+Claude Code then runs:
+
+```bash
+uv run python scripts/sync.py cartesia --apply
+```
+
+### Path B — Script + `ANTHROPIC_API_KEY` (contributors / CI)
+
+If you don't have Claude Code, the script's built-in AI parser will call the Anthropic API on cache miss. Set `ANTHROPIC_API_KEY` in `.env` and run the script directly:
+
+```bash
+export ANTHROPIC_API_KEY=sk-...
+uv run python scripts/sync.py                    # dry-run all providers, shows diff
+uv run python scripts/sync.py cartesia deepgram  # dry-run two providers
+uv run python scripts/sync.py cartesia --apply   # fetch + apply to dev DB
+uv run python scripts/sync.py --apply            # apply all providers
+```
+
+`api`-source providers (deepgram, azure, amazon-polly, murf, lmnt, rime, etc.) never need the key.
+`docs` / `mixed` providers (cartesia, elevenlabs, openai, sarvam, humeai, etc.) do.
+
+### Promote dev → prod
+
+No AI involved — pure data copy.
+
+```bash
+uv run python scripts/promote.py           # dry-run
+uv run python scripts/promote.py --apply   # write to prod DB
+```
+
+Requires `PROD_DATABASE_URL` in `.env`. See `CLAUDE.md` for the full sync workflow reference.
 
 ## Running a single syncer locally (smoke test)
 
@@ -86,7 +113,7 @@ uv run pytest
 2. Use `normalize_languages()` on every language list (BCP-47 with uppercase region)
 3. For doc-based providers, call `parse_models_from_docs(seed_urls=…, guidance=…)`
 4. Populate `api_urls` and `docs_urls` in the returned `SyncResult`
-5. Register in `scripts/sync.py` (`_SYNCERS` + `_PROVIDER_META`)
+5. Register with a `SyncerEntry(...)` line in `naaviq/sync/registry.py` (single source of truth — both the sync script and the admin API read from it)
 6. Open a PR — your team merges, then triggers sync from the admin UI
 
 See `CLAUDE.md` for the full adding-a-provider checklist.

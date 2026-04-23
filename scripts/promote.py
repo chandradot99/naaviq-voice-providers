@@ -64,7 +64,7 @@ async def _promote_provider(
     prod_provider = result.scalar_one_or_none()
 
     fields = ["display_name", "type", "website", "description", "source",
-              "last_synced_at", "deprecated_at"]
+              "api_urls", "docs_urls", "last_synced_at", "deprecated_at"]
 
     if prod_provider:
         for f in fields:
@@ -98,7 +98,9 @@ async def _promote_models(
     prod_models = {m.model_id: m for m in prod_result.scalars().all()}
 
     fields = ["display_name", "type", "languages", "streaming", "is_default",
-              "description", "eol_date", "meta", "deprecated_at"]
+              "lifecycle", "description", "eol_date",
+              "sample_rates_hz", "audio_formats", "max_text_chars", "max_audio_seconds",
+              "capabilities", "regions", "pricing", "meta", "deprecated_at"]
     stats = SectionStats()
 
     for model_id, dev_m in dev_models.items():
@@ -140,7 +142,7 @@ async def _promote_voices(
 
     fields = ["display_name", "gender", "category", "languages", "description",
               "preview_url", "accent", "age", "use_cases", "tags",
-              "compatible_models", "meta", "deprecated_at"]
+              "compatible_models", "capabilities", "meta", "deprecated_at"]
     stats = SectionStats()
 
     for voice_id, dev_v in dev_voices.items():

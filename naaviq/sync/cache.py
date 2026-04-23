@@ -84,8 +84,16 @@ def _model_from_dict(d: dict) -> SyncModel:
         languages=normalize_languages(d.get("languages") or []),
         streaming=d.get("streaming", True),
         is_default=d.get("is_default", False),
+        lifecycle=d.get("lifecycle") or "ga",
         description=d.get("description"),
         eol_date=d.get("eol_date"),
+        sample_rates_hz=d.get("sample_rates_hz") or [],
+        audio_formats=d.get("audio_formats") or [],
+        max_text_chars=d.get("max_text_chars"),
+        max_audio_seconds=d.get("max_audio_seconds"),
+        capabilities=d.get("capabilities") or [],
+        regions=d.get("regions") or [],
+        pricing=d.get("pricing") or {},
         meta=d.get("meta") or {},
     )
 
@@ -104,5 +112,6 @@ def _voice_from_dict(d: dict) -> SyncVoice:
         use_cases=d.get("use_cases") or [],
         tags=d.get("tags") or [],
         compatible_models=d.get("compatible_models") or [],
+        capabilities=d.get("capabilities") or [],
         meta=d.get("meta") or {},
     )

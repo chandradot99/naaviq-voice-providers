@@ -20,7 +20,7 @@ from __future__ import annotations
 import asyncio
 
 from naaviq.config import settings  # noqa: F401 — triggers load_dotenv() for ANTHROPIC_API_KEY
-from naaviq.sync.ai_parser import parse_models_from_docs
+from naaviq.sync.ai_parser import notes_to_str, parse_models_from_docs
 from naaviq.sync.base import ProviderSyncer, SyncResult
 
 _SEED_URLS = [
@@ -69,7 +69,7 @@ class AmazonTranscribeSyncer(ProviderSyncer):
             tts_voices=[],
             source=self.source,
             docs_urls=_SEED_URLS,
-            notes=notes,
+            notes=notes_to_str(notes),
         )
 
 

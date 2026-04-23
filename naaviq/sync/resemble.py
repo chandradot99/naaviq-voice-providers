@@ -134,7 +134,7 @@ class ResembleSyncer(ProviderSyncer):
                 gender=_GENDER_MAP.get(gender_raw),
                 category="premade",
                 languages=normalize_languages([lang]),
-                compatible_models=[],
+                compatible_models=["*"],
             ))
         return result
 

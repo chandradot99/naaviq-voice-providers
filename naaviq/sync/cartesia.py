@@ -196,7 +196,7 @@ def _to_sync_voice(item: dict) -> SyncVoice:
         description=item.get("description"),
         preview_url=item.get("preview_file_url"),
         accent=accent_from_languages(languages),
-        compatible_models=[],
+        compatible_models=["*"],
         meta={},
     )
 

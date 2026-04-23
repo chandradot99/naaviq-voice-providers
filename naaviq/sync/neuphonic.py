@@ -111,7 +111,7 @@ class NeurophonicSyncer(ProviderSyncer):
                 category="premade",
                 languages=normalize_languages([lang]) if lang else [],
                 description=", ".join(style_tags) if style_tags else None,
-                compatible_models=[],
+                compatible_models=["*"],
             ))
         return result
 

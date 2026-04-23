@@ -161,7 +161,7 @@ class CambAISyncer(ProviderSyncer):
                 languages=["*"],  # cross-lingual: all voices work with all 140+ languages
                 age=age,
                 description=v.get("description") or None,
-                compatible_models=[],  # all voices work with all MARS models
+                compatible_models=["*"],  # all voices work with all MARS models
                 meta={"language_code": v.get("language")},
             ))
         return voices

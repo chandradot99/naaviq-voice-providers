@@ -1,0 +1,23 @@
+# Railway configuration for naaviq-voice-providers (public registry API)
+# https://docs.railway.com/reference/config-as-code
+#
+# Required environment variables (set in Railway dashboard):
+#   DATABASE_URL    postgresql+asyncpg://...@...neon.tech/naaviq?ssl=require
+#
+# Optional (only needed if running Path B sync from the server — not recommended):
+#   ANTHROPIC_API_KEY, *_API_KEY for each provider
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Runs in the new container BEFORE traffic is routed — if migrations fail,
+# Railway keeps the old container live (zero downtime on failed migrations).
+releaseCommand = "uv run alembic upgrade head"
+
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 1

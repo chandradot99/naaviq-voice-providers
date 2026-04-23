@@ -158,7 +158,7 @@ class MinimaxSyncer(ProviderSyncer):
                 category="premade",
                 languages=languages,
                 description=", ".join(descriptions) if descriptions else None,
-                compatible_models=[],
+                compatible_models=["*"],
             ))
         return voices
 

@@ -199,7 +199,7 @@ class FishAudioSyncer(ProviderSyncer):
                 description=(v.get("description") or None),
                 preview_url=preview_url,
                 use_cases=use_cases,
-                compatible_models=[],  # all voices work with all Fish Audio TTS models
+                compatible_models=["*"],  # all voices work with all Fish Audio TTS models
                 meta={
                     "like_count": v.get("like_count"),
                     "task_count": v.get("task_count"),

@@ -38,7 +38,7 @@ import asyncio
 import httpx
 
 from naaviq.config import settings
-from naaviq.sync.ai_parser import parse_models_from_docs
+from naaviq.sync.ai_parser import notes_to_str, parse_models_from_docs
 from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
 
 _VOICES_URL = "https://api.hume.ai/v0/tts/voices"
@@ -116,7 +116,7 @@ class HumeAISyncer(ProviderSyncer):
             source=self.source,
             api_urls=[_VOICES_URL],
             docs_urls=_DOCS_SEED_URLS,
-            notes=notes,
+            notes=notes_to_str(notes),
         )
 
     # ── Private helpers ───────────────────────────────────────────────────────

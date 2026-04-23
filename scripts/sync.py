@@ -18,87 +18,19 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import importlib
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from naaviq.config import settings
-from naaviq.models import Model, Provider, Voice
+from naaviq.models import Model, Provider, SyncRun, Voice, derive_provider_type
 from naaviq.sync.base import SyncModel, SyncResult, SyncVoice
+from naaviq.sync.registry import BY_ID, REGISTRY, load_syncer
 
-_SYNCERS: dict[str, str] = {
-    "deepgram":     "naaviq.sync.deepgram.DeepgramSyncer",
-    "cartesia":     "naaviq.sync.cartesia.CartesiaSyncer",
-    "elevenlabs":   "naaviq.sync.elevenlabs.ElevenLabsSyncer",
-    "openai":       "naaviq.sync.openai.OpenAISyncer",
-    "google-cloud": "naaviq.sync.google_cloud.GoogleCloudSyncer",
-    "sarvam":       "naaviq.sync.sarvam.SarvamSyncer",
-    "azure":        "naaviq.sync.azure.AzureSyncer",
-    "amazon-polly": "naaviq.sync.amazon_polly.AmazonPollySyncer",
-    "humeai":       "naaviq.sync.humeai.HumeAISyncer",
-    "inworld":      "naaviq.sync.inworld.InworldAISyncer",
-    "murf":         "naaviq.sync.murf.MurfAISyncer",
-    "speechmatics": "naaviq.sync.speechmatics.SpeechmaticsSyncer",
-    "lmnt":         "naaviq.sync.lmnt.LmntSyncer",
-    "rime":         "naaviq.sync.rime.RimeSyncer",
-    "assemblyai":   "naaviq.sync.assemblyai.AssemblyAISyncer",
-    "revai":        "naaviq.sync.revai.RevAISyncer",
-    "gladia":       "naaviq.sync.gladia.GladiaSyncer",
-    "minimax":      "naaviq.sync.minimax.MinimaxSyncer",
-    "ibm":          "naaviq.sync.ibm.IBMSyncer",
-    "neuphonic":         "naaviq.sync.neuphonic.NeurophonicSyncer",
-    "amazon-transcribe": "naaviq.sync.amazon_transcribe.AmazonTranscribeSyncer",
-    "resemble":          "naaviq.sync.resemble.ResembleSyncer",
-    "fishaudio":         "naaviq.sync.fishaudio.FishAudioSyncer",
-    "unrealspeech":      "naaviq.sync.unrealspeech.UnrealSpeechSyncer",
-    "smallestai":        "naaviq.sync.smallestai.SmallestAISyncer",
-    "lovoai":            "naaviq.sync.lovoai.LovoAISyncer",
-    "mistral":           "naaviq.sync.mistral.MistralSyncer",
-    "wellsaid":          "naaviq.sync.wellsaid.WellSaidSyncer",
-    "cambai":            "naaviq.sync.cambai.CambAISyncer",
-    "speechify":         "naaviq.sync.speechify.SpeechifySyncer",
-    "typecastai":        "naaviq.sync.typecastai.TypecastAISyncer",
-    "groq":              "naaviq.sync.groq.GroqSyncer",
-}
-
-_PROVIDER_META: dict[str, dict] = {
-    "deepgram":     {"display_name": "Deepgram",      "type": "both"},
-    "cartesia":     {"display_name": "Cartesia",      "type": "both"},
-    "elevenlabs":   {"display_name": "ElevenLabs",    "type": "both"},
-    "openai":       {"display_name": "OpenAI",        "type": "both"},
-    "google-cloud": {"display_name": "Google Cloud",  "type": "both"},
-    "sarvam":       {"display_name": "Sarvam",        "type": "both"},
-    "azure":        {"display_name": "Azure Speech",  "type": "both"},
-    "amazon-polly": {"display_name": "Amazon Polly",  "type": "tts"},
-    "humeai":       {"display_name": "Hume AI",       "type": "tts"},
-    "inworld":      {"display_name": "Inworld AI",    "type": "both"},
-    "murf":         {"display_name": "Murf AI",       "type": "tts"},
-    "speechmatics": {"display_name": "Speechmatics",  "type": "stt"},
-    "lmnt":         {"display_name": "LMNT",          "type": "tts"},
-    "rime":         {"display_name": "Rime AI",       "type": "tts"},
-    "assemblyai":   {"display_name": "AssemblyAI",    "type": "stt"},
-    "revai":        {"display_name": "Rev AI",        "type": "stt"},
-    "gladia":       {"display_name": "Gladia",        "type": "stt"},
-    "minimax":      {"display_name": "MiniMax",       "type": "tts"},
-    "ibm":          {"display_name": "IBM Watson",    "type": "both"},
-    "neuphonic":         {"display_name": "Neuphonic",            "type": "tts"},
-    "amazon-transcribe": {"display_name": "Amazon Transcribe",    "type": "stt"},
-    "resemble":          {"display_name": "Resemble AI",          "type": "tts"},
-    "fishaudio":         {"display_name": "Fish Audio",            "type": "both"},
-    "unrealspeech":      {"display_name": "Unreal Speech",         "type": "tts"},
-    "smallestai":        {"display_name": "Smallest AI",           "type": "both"},
-    "lovoai":            {"display_name": "Lovo AI",               "type": "tts"},
-    "mistral":           {"display_name": "Mistral AI",            "type": "both"},
-    "wellsaid":          {"display_name": "WellSaid Labs",         "type": "tts"},
-    "cambai":            {"display_name": "CAMB.ai",               "type": "both"},
-    "speechify":         {"display_name": "Speechify",             "type": "tts"},
-    "typecastai":        {"display_name": "Typecast AI",           "type": "tts"},
-    "groq":              {"display_name": "Groq",                  "type": "both"},
-}
+_SYNC_ERROR_MAX_CHARS = 8000   # cap stored error text
 
 _MODEL_IDENTITY = {"model_id", "type"}
 _VOICE_IDENTITY = {"voice_id"}
@@ -121,8 +53,12 @@ class SectionStats:
 async def _ensure_provider(provider_id: str, session: AsyncSession) -> None:
     result = await session.execute(select(Provider).where(Provider.provider_id == provider_id))
     if not result.scalar_one_or_none():
-        meta = _PROVIDER_META.get(provider_id, {"display_name": provider_id, "type": "both"})
-        session.add(Provider(provider_id=provider_id, **meta))
+        entry = BY_ID[provider_id]  # main() already validated provider_id is in the registry
+        session.add(Provider(
+            provider_id=provider_id,
+            display_name=entry.display_name,
+            type=entry.type,
+        ))
         await session.flush()
         print(f"  Created provider record for '{provider_id}'")
 
@@ -141,11 +77,31 @@ async def _apply_models(
     )
     existing = {m.model_id: m for m in result.scalars().all()}
     incoming_ids = {m.model_id for m in incoming}
+    incoming_by_id = {m.model_id: m for m in incoming}
     stats = SectionStats()
+
+    # Demote existing defaults whose incoming version is no longer the default,
+    # and flush before promoting — the partial unique index
+    # `uq_models_one_default_per_provider_type` is checked per-row at UPDATE time,
+    # so a promote-before-demote order can fail with a unique violation.
+    demoted = False
+    for model_id, existing_m in existing.items():
+        if not existing_m.is_default or existing_m.deprecated_at is not None:
+            continue
+        incoming_m = incoming_by_id.get(model_id)
+        if incoming_m is None or not incoming_m.is_default:
+            existing_m.is_default = False
+            demoted = True
+    if demoted:
+        await session.flush()
 
     for sync_m in incoming:
         payload = {k: v for k, v in vars(sync_m).items()}
         payload["type"] = type_
+        # SyncModel.eol_date is "YYYY-MM-DD" string (ai_parser/cache emit strings);
+        # DB column is Date. asyncpg doesn't always coerce — do it explicitly here.
+        if isinstance(payload.get("eol_date"), str):
+            payload["eol_date"] = date.fromisoformat(payload["eol_date"])
         if sync_m.model_id in existing:
             m = existing[sync_m.model_id]
             for field, value in payload.items():
@@ -160,6 +116,7 @@ async def _apply_models(
     for model_id, m in existing.items():
         if model_id not in incoming_ids and m.deprecated_at is None:
             m.deprecated_at = now
+            m.lifecycle = "deprecated"   # DB CHECK: deprecated_at and lifecycle='deprecated' are in lockstep
             stats.deprecated += 1
 
     return stats
@@ -199,14 +156,43 @@ async def _apply_voices(
     return stats
 
 
+def _section_stats_dict(s: SectionStats) -> dict:
+    return {"added": s.added, "updated": s.updated, "deprecated": s.deprecated}
+
+
+async def _record_sync_error(
+    provider_id: str,
+    started_at: datetime,
+    error_msg: str,
+    session: AsyncSession,
+    source: str | None = None,
+) -> None:
+    """Rollback pending changes, re-ensure the provider, write an error sync_run, commit.
+
+    `source` is None for fetch-stage errors (we never got a SyncResult), or the
+    result's source for apply-stage errors.
+    """
+    await session.rollback()
+    await _ensure_provider(provider_id, session)
+    session.add(SyncRun(
+        provider_id=provider_id,
+        status="error",
+        source=source,
+        started_at=started_at,
+        finished_at=datetime.now(timezone.utc),
+        stats={},
+        error=error_msg[:_SYNC_ERROR_MAX_CHARS],
+    ))
+    await session.commit()
+
+
 async def sync_provider(provider_id: str, session: AsyncSession, apply: bool) -> bool:
     print(f"\n{'─' * 52}")
     print(f"  {provider_id}")
     print(f"{'─' * 52}")
 
-    syncer_path = _SYNCERS[provider_id]
-    module_path, class_name = syncer_path.rsplit(".", 1)
-    syncer = getattr(importlib.import_module(module_path), class_name)()
+    started_at = datetime.now(timezone.utc)
+    syncer = load_syncer(provider_id)
 
     print("  Fetching...", end="", flush=True)
     try:
@@ -219,42 +205,76 @@ async def sync_provider(provider_id: str, session: AsyncSession, apply: bool) ->
                 print(f"     {line.strip()}")
         else:
             print(f"\n  ✗ {e}")
+        if apply:
+            await _record_sync_error(provider_id, started_at, f"{type(e).__name__}: {e}", session)
+        else:
+            await session.rollback()
         return False
     print(" done")
 
     now = datetime.now(timezone.utc)
-    await _ensure_provider(provider_id, session)
+    try:
+        await _ensure_provider(provider_id, session)
 
-    stt_stats = await _apply_models(provider_id, "stt", result.stt_models, now, session)
-    tts_stats = await _apply_models(provider_id, "tts", result.tts_models, now, session)
-    voice_stats = await _apply_voices(provider_id, result.tts_voices, now, session)
+        stt_stats = await _apply_models(provider_id, "stt", result.stt_models, now, session)
+        tts_stats = await _apply_models(provider_id, "tts", result.tts_models, now, session)
+        voice_stats = await _apply_voices(provider_id, result.tts_voices, now, session)
 
-    print(f"  STT models : {stt_stats}")
-    print(f"  TTS models : {tts_stats}")
-    print(f"  TTS voices : {voice_stats}")
+        print(f"  STT models : {stt_stats}")
+        print(f"  TTS models : {tts_stats}")
+        print(f"  TTS voices : {voice_stats}")
 
-    if not any(s.has_changes for s in [stt_stats, tts_stats, voice_stats]):
-        print("  No changes — already up to date.")
-        await session.rollback()
-        return True
+        if not apply:
+            if not any(s.has_changes for s in [stt_stats, tts_stats, voice_stats]):
+                print("  No changes — already up to date.")
+            else:
+                print("  Dry-run — no changes written. Run with --apply to write to dev DB.")
+            await session.rollback()
+            return True
 
-    if not apply:
-        print("  Dry-run — no changes written. Run with --apply to write to dev DB.")
-        await session.rollback()
-        return True
-
-    result2 = await session.execute(select(Provider).where(Provider.provider_id == provider_id))
-    provider = result2.scalar_one_or_none()
-    if provider:
+        provider = (await session.execute(
+            select(Provider).where(Provider.provider_id == provider_id)
+        )).scalar_one()
         provider.source = result.source
         provider.last_synced_at = now
         if result.api_urls:
             provider.api_urls = result.api_urls
         if result.docs_urls:
             provider.docs_urls = result.docs_urls
+        derived_type = await derive_provider_type(provider_id, session)
+        if derived_type and provider.type != derived_type:
+            provider.type = derived_type
 
-    await session.commit()
-    print("  ✓ Applied to dev DB.")
+        session.add(SyncRun(
+            provider_id=provider_id,
+            status="success",
+            source=result.source,
+            started_at=started_at,
+            finished_at=now,
+            stats={
+                "stt":    _section_stats_dict(stt_stats),
+                "tts":    _section_stats_dict(tts_stats),
+                "voices": _section_stats_dict(voice_stats),
+            },
+            notes=result.notes,
+        ))
+
+        await session.commit()
+    except Exception as e:
+        print(f"\n  ✗ Apply error: {type(e).__name__}: {e}")
+        if apply:
+            await _record_sync_error(
+                provider_id, started_at, f"{type(e).__name__}: {e}", session,
+                source=result.source,
+            )
+        else:
+            await session.rollback()
+        return False
+
+    if not any(s.has_changes for s in [stt_stats, tts_stats, voice_stats]):
+        print("  ✓ Synced — no changes.")
+    else:
+        print("  ✓ Applied to dev DB.")
     return True
 
 
@@ -265,13 +285,13 @@ async def main() -> None:
     args = parser.parse_args()
 
     if args.providers:
-        unknown = [p for p in args.providers if p not in _SYNCERS]
+        unknown = [p for p in args.providers if p not in BY_ID]
         if unknown:
             print(f"Unknown providers: {', '.join(unknown)}")
-            print(f"Available: {', '.join(_SYNCERS)}")
+            print(f"Available: {', '.join(e.provider_id for e in REGISTRY)}")
             return
 
-    provider_ids = args.providers or list(_SYNCERS.keys())
+    provider_ids = args.providers or [e.provider_id for e in REGISTRY]
 
     mode = "APPLY" if args.apply else "DRY-RUN"
     print(f"Dev DB : {settings.database_url}")
