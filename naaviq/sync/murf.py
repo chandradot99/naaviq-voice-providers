@@ -25,7 +25,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import parse_models_from_docs
-from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
 from naaviq.sync.language import ACCENT_MAP, normalize_languages
 
 _VOICES_URL = "https://api.murf.ai/v1/speech/voices"
@@ -183,7 +183,6 @@ def _accent_from_locale(locale: str) -> str | None:
 # ── Local runner ──────────────────────────────────────────────────────────────
 
 async def _main() -> None:
-    import asyncio
     import sys
 
     syncer = MurfAISyncer()

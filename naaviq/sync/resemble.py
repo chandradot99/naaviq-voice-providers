@@ -20,7 +20,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import parse_models_from_docs
-from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _BASE_URL = "https://app.resemble.ai/api/v2"
@@ -75,7 +75,6 @@ class ResembleSyncer(ProviderSyncer):
         )
 
         tts_voices = self._parse_voices(voices_raw)
-        model_ids = [m.model_id for m in tts_models]
 
         from_cache = isinstance(notes, dict) and notes.get("source") == "cache"
         if from_cache:

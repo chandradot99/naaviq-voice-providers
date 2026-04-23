@@ -195,7 +195,7 @@ async def _main() -> None:
     for model_id, count in sorted(model_counts.items()):
         print(f"  {model_id!r:12} {count} voices")
 
-    print(f"\n=== Sample voices (first 10) ===")
+    print("\n=== Sample voices (first 10) ===")
     for v in result.tts_voices[:10]:
         print(
             f"  {v.voice_id!r:30} {v.display_name!r:25} "

@@ -39,8 +39,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import parse_models_from_docs
-from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
-from naaviq.sync.language import normalize_languages
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
 
 _VOICES_URL = "https://api.lmnt.com/v1/ai/voice/list"
 

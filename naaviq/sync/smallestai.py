@@ -163,7 +163,7 @@ class SmallestAISyncer(ProviderSyncer):
 
             tags = v.get("tags") or {}
             raw_langs = tags.get("language") or []
-            mapped = [_LANG_NAME_TO_BCP47.get(l.lower(), l) for l in raw_langs]
+            mapped = [_LANG_NAME_TO_BCP47.get(lang.lower(), lang) for lang in raw_langs]
             languages = normalize_languages(mapped) if mapped else ["en"]
             gender = _GENDER_MAP.get((tags.get("gender") or "").lower())
             accent = tags.get("accent") or None

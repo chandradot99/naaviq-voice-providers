@@ -312,10 +312,10 @@ async def main() -> None:
         print(f"  {success}/{len(provider_ids)} providers synced to dev DB")
         if success < len(provider_ids):
             print(f"  {len(provider_ids) - success} failed — check errors above")
-        print(f"\n  To promote to prod: uv run python scripts/promote.py")
+        print("\n  To promote to prod: uv run python scripts/promote.py")
     else:
-        print(f"  Dry-run complete — no changes written.")
-        print(f"  Review the diff above, then run with --apply to write to dev DB.")
+        print("  Dry-run complete — no changes written.")
+        print("  Review the diff above, then run with --apply to write to dev DB.")
 
     await engine.dispose()
 

@@ -41,7 +41,7 @@ from collections import defaultdict
 import httpx
 
 from naaviq.sync.ai_parser import parse_models_from_docs
-from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _VOICES_URL = "https://users.rime.ai/data/voices/voice_details.json"
@@ -257,7 +257,7 @@ async def _main() -> None:
     for model_id, count in sorted(model_counts.items()):
         print(f"  {model_id!r:12} {count} voices")
 
-    print(f"\n=== Sample voices (first 5 per model) ===")
+    print("\n=== Sample voices (first 5 per model) ===")
     shown: dict[str, int] = {}
     for v in result.tts_voices:
         model = v.compatible_models[0] if v.compatible_models else "?"

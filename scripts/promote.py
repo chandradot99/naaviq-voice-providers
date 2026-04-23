@@ -244,8 +244,8 @@ async def main() -> None:
     if args.apply:
         print(f"  {success}/{len(provider_ids)} providers promoted to prod")
     else:
-        print(f"  Dry-run complete — no changes written.")
-        print(f"  Review the diff above, then run with --apply to promote to prod.")
+        print("  Dry-run complete — no changes written.")
+        print("  Review the diff above, then run with --apply to promote to prod.")
 
     await dev_engine.dispose()
     await prod_engine.dispose()

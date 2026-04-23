@@ -29,8 +29,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import parse_models_from_docs
-from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
-from naaviq.sync.language import normalize_languages
+from naaviq.sync.base import ProviderSyncer, SyncResult, SyncVoice
 
 _BASE_URL = "https://api.typecast.ai"
 _VOICES_URL = f"{_BASE_URL}/v2/voices"

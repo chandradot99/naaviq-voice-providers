@@ -284,7 +284,7 @@ async def parse_models_from_docs(
 
     # Claude Code path: check cache before hitting the API
     if not (api_key or os.getenv("ANTHROPIC_API_KEY")):
-        from naaviq.sync.cache import read_models_cache, _models_path
+        from naaviq.sync.cache import _models_path, read_models_cache
         cached = read_models_cache(provider_id, model_type)
         if cached is not None:
             return cached, {"source": "cache", "path": str(_models_path(provider_id, model_type))}
@@ -361,7 +361,7 @@ async def parse_voices_from_docs(
 
     # Claude Code path: check cache before hitting the API
     if not (api_key or os.getenv("ANTHROPIC_API_KEY")):
-        from naaviq.sync.cache import read_voices_cache, _voices_path
+        from naaviq.sync.cache import _voices_path, read_voices_cache
         cached = read_voices_cache(provider_id)
         if cached is not None:
             return cached, {"source": "cache", "path": str(_voices_path(provider_id))}

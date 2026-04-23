@@ -22,7 +22,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import parse_voices_from_docs
-from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult
 
 _MODELS_URL = "https://api.groq.com/openai/v1/models"
 _TTS_ENDPOINT = "https://api.groq.com/openai/v1/audio/speech"

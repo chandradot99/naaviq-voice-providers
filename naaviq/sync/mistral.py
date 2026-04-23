@@ -140,7 +140,6 @@ class MistralSyncer(ProviderSyncer):
 
         headers = {"Authorization": f"Bearer {settings.mistral_api_key}"}
         all_voices: list[dict] = []
-        offset = 0
         limit = 100
 
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
@@ -182,7 +181,7 @@ class MistralSyncer(ProviderSyncer):
             gender = _GENDER_MAP.get((v.get("gender") or "").lower())
 
             # API returns languages as ["en_us"] — normalize underscore → hyphen
-            raw_langs = [l.replace("_", "-") for l in (v.get("languages") or [])]
+            raw_langs = [lang.replace("_", "-") for lang in (v.get("languages") or [])]
             languages = normalize_languages(raw_langs) if raw_langs else ["en"]
 
             age_raw = v.get("age")

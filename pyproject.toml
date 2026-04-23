@@ -39,6 +39,9 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+# E501 (line-too-long) disabled — long lines are intentional in AI parser prompt strings
+# and FastAPI route description text. The line-length setting above still guides the formatter.
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

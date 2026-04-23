@@ -25,7 +25,7 @@ import httpx
 
 from naaviq.config import settings
 from naaviq.sync.ai_parser import parse_models_from_docs
-from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncModel, SyncResult, SyncVoice
+from naaviq.sync.base import HTTP_TIMEOUT, ProviderSyncer, SyncResult, SyncVoice
 from naaviq.sync.language import normalize_languages
 
 _VOICES_URL = "https://api.minimax.io/v1/get_voice"
@@ -204,6 +204,7 @@ def _display_name(voice_name: str) -> str:
 
 async def _main() -> None:
     import sys
+
     from naaviq.sync.base import SyncResult  # noqa
 
     syncer = MinimaxSyncer()

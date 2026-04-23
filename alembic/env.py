@@ -1,11 +1,11 @@
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from naaviq.db import Base
 import naaviq.models  # noqa: F401 — ensure all models are registered
+from alembic import context
+from naaviq.db import Base
 
 config = context.config
 if config.config_file_name is not None:
