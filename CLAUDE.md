@@ -78,10 +78,10 @@ naaviq-voice-providers/
 │       ├── amazon_polly.py    — Amazon Polly (api: tts)
 │       ├── humeai.py          — Hume AI (mixed: tts)
 │       ├── inworld.py         — Inworld AI (mixed: both)
-│       ├── murf.py            — Murf AI (api: tts)
+│       ├── murf.py            — Murf AI (mixed: tts)
 │       ├── speechmatics.py    — Speechmatics (docs: stt)
 │       ├── lmnt.py            — LMNT (mixed: tts)
-│       ├── rime.py            — Rime AI (api: tts)
+│       ├── rime.py            — Rime AI (mixed: tts)
 │       ├── assemblyai.py      — AssemblyAI (docs: stt)
 │       ├── revai.py           — Rev AI (docs: stt)
 │       ├── gladia.py          — Gladia (docs: stt)
@@ -103,11 +103,26 @@ naaviq-voice-providers/
 ├── scripts/
 │   ├── sync.py           — run syncers, diff vs dev DB, apply to dev DB
 │   └── promote.py        — copy dev DB state → prod DB (zero token cost)
-├── alembic/              — DB migrations (001 providers, 002 models, 003 voices, 004 provider source urls)
+├── alembic/              — DB migrations (001_initial_schema.py — squashed baseline)
 ├── tests/
+├── .github/workflows/
+│   └── ci.yml            — lint + migrations + pytest against Postgres service
+├── Dockerfile            — Railway build (uv + FastAPI + Alembic release command)
+├── railway.toml          — Railway config (healthcheck, releaseCommand runs migrations)
+├── .dockerignore
 ├── docker-compose.yml    — Postgres only (for local dev)
 └── CLAUDE.md
 ```
+
+## Deployment
+
+- **Hosting:** Railway (Dockerfile-based build, `releaseCommand = uv run alembic upgrade head`)
+- **Database:** Neon Postgres (serverless, auto-suspend after 5min idle)
+- **Live URL:** `https://naaviq-voice-providers-production.up.railway.app` (custom domain TBD)
+- **CI gates deploy:** Railway "Wait for CI" is enabled — pushes to `main` only deploy after `test` job passes in GitHub Actions
+- **Branch protection:** `main` requires PR + green `test` check for non-admins; owner can push directly
+
+Connection string for asyncpg: Neon's default `postgresql://…?sslmode=require` must be rewritten to `postgresql+asyncpg://…?ssl=require` before being set as `DATABASE_URL` on Railway.
 
 ## Database tables
 
@@ -318,6 +333,8 @@ Three paths — all use the same sync scripts and produce identical DB state. Th
 
 Ask Claude Code to sync a provider. For `docs`/`mixed` providers Claude Code itself does the agentic fetch-and-parse step, writing structured output to `.sync-cache/` before running the script. The script reads the cache and skips the internal AI parser entirely. **No `ANTHROPIC_API_KEY` is needed** — the AI work is attributed to your Claude Code session, not billed against a key.
 
+`.sync-cache/` is a single-run handshake, not a cross-run memo: after every `--apply`, the script deletes that provider's cache files. Next sync is forced to re-parse from docs, so we never silently reuse a stale extraction. Dry-runs preserve cache so you can review a diff and apply without re-parsing.
+
 ```bash
 # In your Claude Code conversation:
 "sync cartesia to dev DB"
@@ -347,8 +364,8 @@ uv run python scripts/sync.py cartesia --apply    # AI parser runs inside the sc
 uv run python scripts/sync.py deepgram --apply    # no key needed (api source)
 ```
 
-`docs`/`mixed` providers that use the AI parser: cartesia, elevenlabs, openai, google-cloud, sarvam, humeai, inworld, speechmatics, assemblyai, revai, and the other docs-based syncers.
-`api` providers that never need the key: deepgram, azure, amazon-polly, murf, lmnt, rime, etc.
+`docs`/`mixed` providers that use the AI parser (most of them — includes cartesia, elevenlabs, openai, google-cloud, sarvam, humeai, inworld, speechmatics, assemblyai, revai, gladia, amazon-transcribe, unrealspeech, murf, lmnt, rime, minimax, neuphonic, resemble, fishaudio, smallestai, lovoai, mistral, wellsaid, cambai, speechify, typecastai, groq).
+`api` providers that never need the key: deepgram, azure, amazon-polly, ibm.
 
 ### Path C: Admin UI
 

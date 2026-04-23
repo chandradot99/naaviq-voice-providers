@@ -2,7 +2,7 @@
 
 Open-source voice provider registry — STT/TTS models and voices.
 
-A public read-only REST API at `providers.naaviq.ai` that serves up-to-date metadata about voice AI providers so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
+A public read-only REST API at [naaviq-voice-providers-production.up.railway.app](https://naaviq-voice-providers-production.up.railway.app) that serves up-to-date metadata about voice AI providers so applications can discover models, voices, supported languages, and capabilities without scraping each provider's docs.
 
 **32 providers covered:** Deepgram, Cartesia, ElevenLabs, OpenAI, Google Cloud, Sarvam, Azure Speech, Amazon Polly, Hume AI, Inworld AI, Murf AI, Speechmatics, LMNT, Rime AI, AssemblyAI, Rev AI, Gladia, MiniMax, IBM Watson, Neuphonic, Amazon Transcribe, Resemble AI, Fish Audio, Unreal Speech, Smallest AI, Lovo AI, Mistral AI, WellSaid Labs, CAMB.ai, Speechify, Typecast AI, Groq
 
@@ -20,9 +20,9 @@ Each provider has a syncer that returns a `SyncResult(stt_models, tts_models, tt
 
 | Source | When | Examples |
 |---|---|---|
-| `api` | Provider exposes a REST models/voices endpoint | Deepgram, Azure, Amazon Polly, Rime AI, Murf, IBM |
-| `docs` | No API — parse docs with an AI model | OpenAI, Sarvam, Speechmatics, AssemblyAI, Rev AI, Unreal Speech |
-| `mixed` | Some endpoints exist, some require parsing docs | Cartesia, ElevenLabs, Hume AI, LMNT, Fish Audio, Groq, CAMB.ai |
+| `api` | Provider exposes a REST models/voices endpoint | Deepgram, Azure, Amazon Polly, IBM |
+| `docs` | No API — parse docs with an AI model | OpenAI, Sarvam, Speechmatics, AssemblyAI, Rev AI, Gladia, Amazon Transcribe, Unreal Speech |
+| `mixed` | Some endpoints exist, some require parsing docs | Cartesia, ElevenLabs, Google Cloud, Hume AI, Inworld, Murf, Rime AI, LMNT, Fish Audio, Groq, CAMB.ai |
 
 For `docs` and `mixed` sources, `naaviq/sync/ai_parser.py` runs an agentic Claude loop to extract structured `SyncModel` objects from documentation pages. Each provider row stores `api_urls` and `docs_urls` so consumers can trace where the data came from.
 
@@ -67,8 +67,8 @@ uv run python scripts/sync.py cartesia --apply   # fetch + apply to dev DB
 uv run python scripts/sync.py --apply            # apply all providers
 ```
 
-`api`-source providers (deepgram, azure, amazon-polly, murf, lmnt, rime, etc.) never need the key.
-`docs` / `mixed` providers (cartesia, elevenlabs, openai, sarvam, humeai, etc.) do.
+`api`-source providers (deepgram, azure, amazon-polly, ibm) never need the key.
+All other providers are `docs` or `mixed` and do.
 
 ### Promote dev → prod
 
@@ -96,6 +96,8 @@ Smoke tests only print the result — they never write to the DB.
 uv sync --extra dev
 uv run pytest
 ```
+
+CI runs lint (`ruff`), migrations (`alembic upgrade head`), and `pytest` against a Postgres service container on every push and PR. Deploys to Railway are gated on CI passing.
 
 ## Public API endpoints
 
