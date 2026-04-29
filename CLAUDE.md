@@ -6,7 +6,7 @@ Open-source voice provider registry. A public read-only REST API that serves met
 
 - **Not a Python package** — this is a FastAPI application, not published to PyPI
 - **Public API** at `providers.naaviq.ai` — no auth, rate limited at 100 req/min/IP
-- **Data source of truth** for voice provider metadata used by Vaaniq and the broader community
+- **Data source of truth** for voice provider metadata used by Naaviq and the broader community
 
 ## The 3-repo architecture
 
@@ -397,4 +397,4 @@ All list endpoints support **`?updated_since=<ISO-8601>`** for incremental polli
 
 - `naaviq-admin` — private admin API (sync trigger, diff apply, DB writes)
 - `naaviq-admin-ui` — private admin frontend (sync button, diff review)
-- `vaaniq` — main Vaaniq backend (consumes this public API)
+- `naaviq-api` — main Naaviq backend (consumes this public API)
